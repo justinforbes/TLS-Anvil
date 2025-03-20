@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import de.rub.nds.anvilcore.context.AnvilContext;
 import de.rub.nds.anvilcore.context.AnvilTestConfig;
+import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.SeedingMethodDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.*;
@@ -92,7 +93,11 @@ public class ConfigurationOptionsConfigTest {
         // Check flag translation
         {
             ConfigOptionValueTranslation translation =
-                    config.getOptionsToTranslationMap().get(ConfigOptionParameterType.DISABLE_PSK);
+                    config.getOptionsToTranslationMap()
+                            .get(
+                                    new ParameterIdentifier(
+                                            ConfigOptionParameterType.COMMON_BUILD_FLAG,
+                                            new CommonBuildParameterScope("DISABLE_PSK")));
             assertNotNull(translation);
             assertInstanceOf(FlagTranslation.class, translation);
             FlagTranslation flagTranslation = (FlagTranslation) translation;
@@ -104,7 +109,10 @@ public class ConfigurationOptionsConfigTest {
         {
             ConfigOptionValueTranslation translation =
                     config.getOptionsToTranslationMap()
-                            .get(ConfigOptionParameterType.SEEDING_METHOD);
+                            .get(
+                                    new ParameterIdentifier(
+                                            ConfigOptionParameterType.SEEDING_METHOD,
+                                            ConfigOptionParameterScope.DEFAULT));
             assertNotNull(translation);
             assertInstanceOf(SingleValueOptionTranslation.class, translation);
             SingleValueOptionTranslation singleTranslation =
