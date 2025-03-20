@@ -17,6 +17,7 @@ import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
+import java.util.List;
 
 public abstract class ConfigurationOptionDerivationParameter
         extends DerivationParameter<Config, ConfigurationOptionValue> {
@@ -41,7 +42,15 @@ public abstract class ConfigurationOptionDerivationParameter
      *
      * @return the option value resulting int the most feature-rich library build
      */
-    public abstract ConfigurationOptionValue getMaxFeatureValue();
+    public ConfigurationOptionValue getMaxFeatureValue() {
+        List<DerivationParameter<Config, ConfigurationOptionValue>> parameterValues =
+                getParameterValues(null);
+        return parameterValues.stream()
+                .filter(parameter -> parameter.getSelectedValue().isRichestConfiguration())
+                .findFirst()
+                .orElse(parameterValues.get(0))
+                .getSelectedValue();
+    }
 
     /**
      * Returns the implicit value that is chosen if a configuration option is not used. Must be
@@ -51,7 +60,7 @@ public abstract class ConfigurationOptionDerivationParameter
      */
     public ConfigurationOptionValue getDefaultValue() {
         // Default (Override for non-flag values)
-        return new ConfigurationOptionValue(false);
+        return new ConfigurationOptionValue(false, true);
     }
 
     public ConfigurationOptionDerivationParameter getDefaultValueParameter() {

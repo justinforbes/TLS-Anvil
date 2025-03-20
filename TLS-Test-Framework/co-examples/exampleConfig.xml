@@ -48,7 +48,7 @@
                 <!-- Single option values are options that have an identifier and a single value like: '- -with-rand-seed=<seeding_method>' -->
                 <identifier>--with-rand-seed</identifier>
                 <!-- Every possible value must appear here. It is translated to a value that can be parsed by the tls library -->
-                <value key="OS_ENTROPY_SOURCE">os</value>
+                <value maxValue="true" key="OS_ENTROPY_SOURCE">os</value>
                 <value key="GET_RANDOM">getrandom</value>
                 <value key="DEV_RANDOM">devrandom</value>
                 <value key="ENTROPY_GENERATING_DAEMON">egd</value>
@@ -63,7 +63,7 @@
                 <!-- Translations of type flag only have two values. Either the flag is set or not.
                      The translation data for a set flag is entered in the <true>-block. For an unset
                      flag in the <false>-block -->
-                <true>enable-ec_nistp_64_gcc_128</true>
+                <true maxValue="true">enable-ec_nistp_64_gcc_128</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -72,7 +72,7 @@
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-sse2</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -80,7 +80,7 @@
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-ec2m</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -88,7 +88,7 @@
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-multiblock</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -96,14 +96,14 @@
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-psk</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
             <derivationType>CommonBuildParameter:ENABLE_COMPRESSION</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
-                <true>zlib</true>
+                <true maxValue="true">zlib</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -112,7 +112,7 @@
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-asm</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
 
@@ -126,14 +126,14 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-afalgeng</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
             <derivationType>CommonBuildParameter:ENABLE_ENTROPY_GATHERING_DAEMON</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-egd</true>
+                <true maxValue="true">enable-egd</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -142,7 +142,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-rdrand</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -150,7 +150,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-ct</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -158,7 +158,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-nextprotoneg</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -166,14 +166,14 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-ocsp</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
             <derivationType>ConfigOptionParameter:ENABLE_WEAK_SSL_CIPHERS</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-weak-ssl-ciphers</true>
+                <true maxValue="true">enable-weak-ssl-ciphers</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -181,7 +181,7 @@
             <derivationType>CommonBuildParameter:ENABLE_MD2</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-md2</true>
+                <true maxValue="true">enable-md2</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -189,7 +189,7 @@
             <derivationType>CommonBuildParameter:ENABLE_RC5</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-rc5</true>
+                <true maxValue="true">enable-rc5</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -202,7 +202,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-hw-padlock</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -210,7 +210,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-posix-io</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -218,7 +218,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-rfc3779</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
@@ -226,14 +226,14 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-srp</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
             <derivationType>CommonBuildParameter:ENABLE_MEMORY_DEBUGGING_SUPPORT</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-crypto-mdebug</true>
+                <true maxValue="true">enable-crypto-mdebug</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -242,7 +242,7 @@
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-err</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
 

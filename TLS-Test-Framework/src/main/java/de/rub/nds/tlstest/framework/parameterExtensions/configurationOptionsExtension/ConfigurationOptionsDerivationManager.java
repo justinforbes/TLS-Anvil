@@ -206,7 +206,7 @@ public class ConfigurationOptionsDerivationManager {
 
         compoundSetupList = Collections.unmodifiableList(compoundSetupList);
 
-        LOGGER.info("Compiled {} configuration option combinations.");
+        LOGGER.info("Compiled {} configuration option combinations.", compoundSetupList.size());
     }
 
     public void preBuildAndValidateAndFilterSetups() {

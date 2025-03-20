@@ -41,13 +41,8 @@ public class SeedingMethodDerivation extends ConfigurationOptionDerivationParame
     }
 
     @Override
-    public ConfigurationOptionValue getMaxFeatureValue() {
-        return new ConfigurationOptionValue(SeedingMethodType.OS_ENTROPY_SOURCE.name());
-    }
-
-    @Override
     public ConfigurationOptionValue getDefaultValue() {
-        return new ConfigurationOptionValue(SeedingMethodType.OS_ENTROPY_SOURCE.name());
+        return new ConfigurationOptionValue(SeedingMethodType.OS_ENTROPY_SOURCE.name(), true);
     }
 
     @Override
@@ -66,10 +61,13 @@ public class SeedingMethodDerivation extends ConfigurationOptionDerivationParame
                                 SeedingMethodType.OS_ENTROPY_SOURCE,
                                 SeedingMethodType.GET_RANDOM,
                                 SeedingMethodType.DEV_RANDOM));
+        boolean firstToAdd = true;
         for (SeedingMethodType seedingMethodType : seedingMethodsToAdd) {
+            // All configs are equally rich
             parameterValues.add(
                     new SeedingMethodDerivation(
-                            new ConfigurationOptionValue(seedingMethodType.name())));
+                            new ConfigurationOptionValue(seedingMethodType.name(), firstToAdd)));
+            firstToAdd = false;
         }
 
         return parameterValues;

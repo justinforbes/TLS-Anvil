@@ -29,11 +29,6 @@ public class EnableWeakSslCiphersDerivation extends ConfigurationOptionDerivatio
     }
 
     @Override
-    public ConfigurationOptionValue getMaxFeatureValue() {
-        return new ConfigurationOptionValue(true);
-    }
-
-    @Override
     public void applyToConfig(Config config, DerivationScope derivationScope) {}
 
     @Override
@@ -41,9 +36,10 @@ public class EnableWeakSslCiphersDerivation extends ConfigurationOptionDerivatio
             DerivationScope derivationScope) {
         List<DerivationParameter<Config, ConfigurationOptionValue>> parameterValues =
                 new LinkedList<>();
-        parameterValues.add(new EnableWeakSslCiphersDerivation(new ConfigurationOptionValue(true)));
         parameterValues.add(
-                new EnableWeakSslCiphersDerivation(new ConfigurationOptionValue(false)));
+                new EnableWeakSslCiphersDerivation(new ConfigurationOptionValue(true, true)));
+        parameterValues.add(
+                new EnableWeakSslCiphersDerivation(new ConfigurationOptionValue(false, false)));
 
         return parameterValues;
     }

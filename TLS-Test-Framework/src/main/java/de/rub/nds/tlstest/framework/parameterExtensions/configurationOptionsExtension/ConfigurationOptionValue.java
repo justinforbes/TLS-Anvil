@@ -23,13 +23,15 @@ public class ConfigurationOptionValue {
     private List<String> stringValues;
 
     private final boolean isFlag;
+    // mark entry that results in the richest feature set
+    private boolean isRichestConfiguration = false;
 
     /**
      * Constructor for flags.
      *
      * @param flagValue - Pass true if the respective flag should be set, false if not.
      */
-    public ConfigurationOptionValue(boolean flagValue) {
+    public ConfigurationOptionValue(boolean flagValue, boolean isRichestConfiguration) {
         this.isFlag = true;
         this.optionIsSet = flagValue;
     }
@@ -42,7 +44,7 @@ public class ConfigurationOptionValue {
      *
      * @param optionValue - the option value
      */
-    public ConfigurationOptionValue(String optionValue) {
+    public ConfigurationOptionValue(String optionValue, boolean isRichestConfiguration) {
         this.isFlag = false;
         this.optionIsSet = true;
         stringValues = Collections.singletonList(optionValue);
@@ -104,5 +106,9 @@ public class ConfigurationOptionValue {
         } else {
             return String.join(",", getOptionValues());
         }
+    }
+
+    public boolean isRichestConfiguration() {
+        return isRichestConfiguration;
     }
 }

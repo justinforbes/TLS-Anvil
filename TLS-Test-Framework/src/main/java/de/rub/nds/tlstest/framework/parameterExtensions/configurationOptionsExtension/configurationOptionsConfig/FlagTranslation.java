@@ -19,6 +19,8 @@ public class FlagTranslation extends ConfigOptionValueTranslation {
     private String dataIfSet;
     private String dataIfNotSet;
 
+    private boolean setIsRichestConfiguration;
+
     public FlagTranslation(Element xmlElement) {
         super(xmlElement);
     }
@@ -27,6 +29,16 @@ public class FlagTranslation extends ConfigOptionValueTranslation {
     protected void setFromXmlElement(Element xmlElement) {
         dataIfSet = xmlElement.getElementsByTagName("true").item(0).getTextContent();
         dataIfNotSet = xmlElement.getElementsByTagName("false").item(0).getTextContent();
+        // check if maxValue element is added to true element
+        if (xmlElement.getElementsByTagName("true").item(0).hasAttributes()
+                && xmlElement
+                                .getElementsByTagName("true")
+                                .item(0)
+                                .getAttributes()
+                                .getNamedItem("maxValue")
+                        != null) {
+            setIsRichestConfiguration = true;
+        }
     }
 
     public String getDataIfSet() {
@@ -35,5 +47,9 @@ public class FlagTranslation extends ConfigOptionValueTranslation {
 
     public String getDataIfNotSet() {
         return dataIfNotSet;
+    }
+
+    public boolean setIsRichestConfiguration() {
+        return setIsRichestConfiguration;
     }
 }

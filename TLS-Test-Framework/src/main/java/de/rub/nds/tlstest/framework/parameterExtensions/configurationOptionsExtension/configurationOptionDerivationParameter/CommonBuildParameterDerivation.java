@@ -34,11 +34,6 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
     }
 
     @Override
-    public ConfigurationOptionValue getMaxFeatureValue() {
-        throw new UnsupportedOperationException("Max value must be determined externally");
-    }
-
-    @Override
     public void applyToConfig(Config config, DerivationScope derivationScope) {
         throw new UnsupportedOperationException("Build flags must never be applied to the config");
     }
@@ -56,11 +51,15 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
         if (translation instanceof FlagTranslation) {
             parameterValues.add(
                     new CommonBuildParameterDerivation(
-                            new ConfigurationOptionValue(true),
+                            new ConfigurationOptionValue(
+                                    true,
+                                    ((FlagTranslation) translation).setIsRichestConfiguration()),
                             getParameterIdentifier().getParameterScope()));
             parameterValues.add(
                     new CommonBuildParameterDerivation(
-                            new ConfigurationOptionValue(false),
+                            new ConfigurationOptionValue(
+                                    false,
+                                    !((FlagTranslation) translation).setIsRichestConfiguration()),
                             getParameterIdentifier().getParameterScope()));
         } else if (translation instanceof SingleValueOptionTranslation) {
             SingleValueOptionTranslation singleValueOptionTranslation =
@@ -71,7 +70,10 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
                             option -> {
                                 parameterValues.add(
                                         new CommonBuildParameterDerivation(
-                                                new ConfigurationOptionValue(option),
+                                                new ConfigurationOptionValue(
+                                                        option,
+                                                        singleValueOptionTranslation
+                                                                .isRichestConfiguration(option)),
                                                 getParameterIdentifier().getParameterScope()));
                             });
         } else {
