@@ -42,7 +42,7 @@ public class ConfigurationOptionsConfigTest {
                        <configOptionsIpmStrength>2</configOptionsIpmStrength>
                        <optionsToTest>
                            <optionEntry>
-                               <derivationType>ConfigOptionParameter:DISABLE_PSK</derivationType>
+                               <derivationType>CommonBuildParameter:DISABLE_PSK</derivationType>
                                <enabled>true</enabled>
                                <valueTranslation type="Flag">
                                    <true>no-psk</true>"
