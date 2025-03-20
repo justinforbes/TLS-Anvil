@@ -10,7 +10,7 @@
 
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.resultsCollector;
 
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BuildOverviewLogFile extends LogFile {
     private final ConfigurationOptionsConfig config;
-    private List<ConfigOptionParameterType> optionHeaders;
+    private List<ParameterIdentifier> optionHeaders;
 
     private final Set<String> loggedDockerTags;
 
@@ -40,14 +40,14 @@ public class BuildOverviewLogFile extends LogFile {
     private void init() {
         List<String> header = new LinkedList<>();
         optionHeaders = new ArrayList<>(config.getEnabledConfigOptionDerivations());
-        optionHeaders.sort(Comparator.comparing(Enum::name));
+        optionHeaders.sort(Comparator.comparing(ParameterIdentifier::toString));
 
         // String header = "Docker Tag,Build Time,";
         header.add("No");
         header.add("Docker Tag");
         header.add("Build Time (in sec)");
-        for (ConfigOptionParameterType optionHeaderEntry : optionHeaders) {
-            header.add(optionHeaderEntry.name());
+        for (ParameterIdentifier optionHeaderEntry : optionHeaders) {
+            header.add(optionHeaderEntry.toString());
         }
         log(String.join(",", header) + "\n");
         number = 1;
@@ -85,16 +85,14 @@ public class BuildOverviewLogFile extends LogFile {
             line.add("FAILED");
         }
 
-        Map<ConfigOptionParameterType, ConfigurationOptionValue> optionTypeToValue =
-                new HashMap<>();
+        Map<ParameterIdentifier, ConfigurationOptionValue> optionTypeToValue = new HashMap<>();
         for (ConfigurationOptionDerivationParameter configOptionDervivation : optionSet) {
-            ConfigOptionParameterType type =
-                    (ConfigOptionParameterType)
-                            configOptionDervivation.getParameterIdentifier().getParameterType();
-            optionTypeToValue.put(type, configOptionDervivation.getSelectedValue());
+            optionTypeToValue.put(
+                    configOptionDervivation.getParameterIdentifier(),
+                    configOptionDervivation.getSelectedValue());
         }
 
-        for (ConfigOptionParameterType headerField : optionHeaders) {
+        for (ParameterIdentifier headerField : optionHeaders) {
             if (optionTypeToValue.containsKey(headerField)) {
                 line.add(optionTypeToValue.get(headerField).toString());
             } else {

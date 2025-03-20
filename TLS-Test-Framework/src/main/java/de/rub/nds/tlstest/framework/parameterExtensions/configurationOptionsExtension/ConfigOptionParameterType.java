@@ -12,8 +12,8 @@ package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExt
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.anvilcore.model.parameter.ParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.CommonBuildParameterDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionCompoundDerivation;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.DisableAfalgEngineDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.DisableAssemblerCodeDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.DisableBinaryEllipticCurvesDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.DisableCertificateTransparencyDerivation;
@@ -56,6 +56,8 @@ import java.lang.reflect.InvocationTargetException;
  */
 public enum ConfigOptionParameterType implements ParameterType {
     CONFIG_OPTION_COMPOUND_PARAMETER(ConfigurationOptionCompoundDerivation.class),
+
+    COMMON_BUILD_FLAG(CommonBuildParameterDerivation.class),
 
     // 1st Priority
     SEEDING_METHOD(SeedingMethodDerivation.class),
@@ -104,7 +106,12 @@ public enum ConfigOptionParameterType implements ParameterType {
     @Override
     public DerivationParameter getInstance(ParameterScope scope) {
         try {
-            return derivationClass.getDeclaredConstructor().newInstance();
+            if (scope.getUniqueScopeIdentifier()
+                    .startsWith(CommonBuildParameterScope.SCOPE_IDENTIFIER)) {
+                return new CommonBuildParameterDerivation(scope);
+            } else {
+                return derivationClass.getDeclaredConstructor().newInstance();
+            }
         } catch (InstantiationException
                 | IllegalAccessException
                 | InvocationTargetException

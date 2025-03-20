@@ -11,6 +11,7 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -45,6 +46,10 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
                                     .collect(Collectors.joining(",")));
         }
         return valueTranslationMap.get(key);
+    }
+
+    public List<String> getOptions() {
+        return valueTranslationMap.keySet().stream().collect(Collectors.toList());
     }
 
     @Override

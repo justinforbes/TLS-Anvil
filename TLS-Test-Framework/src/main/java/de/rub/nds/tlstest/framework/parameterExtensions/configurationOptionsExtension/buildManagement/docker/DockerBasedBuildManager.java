@@ -12,7 +12,7 @@ package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExt
 
 import com.beust.jcommander.Strings;
 import de.rub.nds.anvilcore.constants.TestEndpointType;
-import de.rub.nds.anvilcore.model.parameter.ParameterScope;
+import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterType;
 import de.rub.nds.tls.subject.ConnectionRole;
 import de.rub.nds.tls.subject.TlsImplementationType;
@@ -304,13 +304,12 @@ public class DockerBasedBuildManager {
      * @return the option set
      */
     protected Set<ConfigurationOptionDerivationParameter> getMaxFeatureOptionSet() {
-        List<ConfigOptionParameterType> derivationTypes =
+        List<ParameterIdentifier> derivationIdentifiers =
                 ConfigurationOptionsDerivationManager.getInstance().getAllActivatedCOTypes();
         Set<ConfigurationOptionDerivationParameter> optionSet = new HashSet<>();
-        for (ParameterType type : derivationTypes) {
+        for (ParameterIdentifier identifier : derivationIdentifiers) {
             ConfigurationOptionDerivationParameter configOptionDerivation =
-                    (ConfigurationOptionDerivationParameter)
-                            type.getInstance(ParameterScope.NO_SCOPE);
+                    (ConfigurationOptionDerivationParameter) identifier.getInstance();
             optionSet.add(configOptionDerivation.getMaxFeatureValueParameter());
         }
         return optionSet;
@@ -657,7 +656,7 @@ public class DockerBasedBuildManager {
      */
     protected String createConfigOptionCliString(
             Set<ConfigurationOptionDerivationParameter> optionSet) {
-        Map<ConfigOptionParameterType, ConfigOptionValueTranslation> optionsToTranslationMap =
+        Map<ParameterIdentifier, ConfigOptionValueTranslation> optionsToTranslationMap =
                 configOptionsConfig.getOptionsToTranslationMap();
         List<String> optionsCliList = new ArrayList<>();
         for (ConfigurationOptionDerivationParameter optionParameter : optionSet) {
@@ -713,7 +712,7 @@ public class DockerBasedBuildManager {
      */
     protected String translateOptionValue(
             ConfigurationOptionDerivationParameter optionParameter,
-            Map<ConfigOptionParameterType, ConfigOptionValueTranslation> optionsToTranslationMap) {
+            Map<ParameterIdentifier, ConfigOptionValueTranslation> optionsToTranslationMap) {
         ConfigurationOptionValue value = optionParameter.getSelectedValue();
         if (value == null) {
             throw new IllegalArgumentException(

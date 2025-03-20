@@ -13,6 +13,7 @@ package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExt
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
+import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
@@ -24,6 +25,11 @@ public abstract class ConfigurationOptionDerivationParameter
     // containers and do not affect the config.
     public ConfigurationOptionDerivationParameter(ConfigOptionParameterType type) {
         super(ConfigurationOptionValue.class, Config.class, new ParameterIdentifier(type));
+    }
+
+    public ConfigurationOptionDerivationParameter(
+            ConfigOptionParameterType type, ParameterScope scope) {
+        super(ConfigurationOptionValue.class, Config.class, new ParameterIdentifier(type, scope));
     }
 
     /**
