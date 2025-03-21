@@ -26,7 +26,10 @@ public abstract class ConfigurationOptionDerivationParameter
     // We use Config.class throughout these parameters allthough they are applied when building the
     // containers and do not affect the config.
     public ConfigurationOptionDerivationParameter(ConfigOptionParameterType type) {
-        super(ConfigurationOptionValue.class, Config.class, new ParameterIdentifier(type, ConfigOptionParameterScope.DEFAULT));
+        super(
+                ConfigurationOptionValue.class,
+                Config.class,
+                new ParameterIdentifier(type, ConfigOptionParameterScope.DEFAULT));
     }
 
     public ConfigurationOptionDerivationParameter(
