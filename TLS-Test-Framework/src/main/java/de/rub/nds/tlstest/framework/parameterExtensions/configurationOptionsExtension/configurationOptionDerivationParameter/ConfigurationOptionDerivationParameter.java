@@ -15,6 +15,7 @@ import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlsattacker.core.config.Config;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
 import java.util.List;
@@ -25,7 +26,7 @@ public abstract class ConfigurationOptionDerivationParameter
     // We use Config.class throughout these parameters allthough they are applied when building the
     // containers and do not affect the config.
     public ConfigurationOptionDerivationParameter(ConfigOptionParameterType type) {
-        super(ConfigurationOptionValue.class, Config.class, new ParameterIdentifier(type));
+        super(ConfigurationOptionValue.class, Config.class, new ParameterIdentifier(type, ConfigOptionParameterScope.DEFAULT));
     }
 
     public ConfigurationOptionDerivationParameter(

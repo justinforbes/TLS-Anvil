@@ -13,7 +13,6 @@ package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExt
 import com.beust.jcommander.Strings;
 import de.rub.nds.anvilcore.constants.TestEndpointType;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
-import de.rub.nds.anvilcore.model.parameter.ParameterType;
 import de.rub.nds.tls.subject.ConnectionRole;
 import de.rub.nds.tls.subject.TlsImplementationType;
 import de.rub.nds.tls.subject.docker.build.DockerBuilder;
@@ -718,19 +717,18 @@ public class DockerBasedBuildManager {
             throw new IllegalArgumentException(
                     "Passed option parameter has no selected value yet.");
         }
-        ParameterType parameterType = optionParameter.getParameterIdentifier().getParameterType();
-        if (!(parameterType instanceof ConfigOptionParameterType)) {
+        ParameterIdentifier parameterIdentifier = optionParameter.getParameterIdentifier();
+        if (!(parameterIdentifier.getParameterType() instanceof ConfigOptionParameterType)) {
             throw new IllegalArgumentException(
                     "Passed derivation parameter is not of type ConfigOptionDerivationType.");
         }
-        ConfigOptionParameterType optionType = (ConfigOptionParameterType) parameterType;
 
-        if (!optionsToTranslationMap.containsKey(optionType)) {
+        if (!optionsToTranslationMap.containsKey(parameterIdentifier)) {
             throw new IllegalStateException(
                     "The ConfigurationOptionsConfig's translation map does not contain the passed type");
         }
 
-        ConfigOptionValueTranslation translation = optionsToTranslationMap.get(optionType);
+        ConfigOptionValueTranslation translation = optionsToTranslationMap.get(parameterIdentifier);
 
         if (translation instanceof FlagTranslation) {
             FlagTranslation flagTranslation = (FlagTranslation) translation;

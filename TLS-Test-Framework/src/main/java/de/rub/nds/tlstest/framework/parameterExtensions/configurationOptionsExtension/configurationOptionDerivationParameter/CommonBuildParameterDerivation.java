@@ -29,7 +29,7 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
 
     public CommonBuildParameterDerivation(
             ConfigurationOptionValue selectedValue, ParameterScope scope) {
-        this();
+        this(scope);
         setSelectedValue(selectedValue);
     }
 
