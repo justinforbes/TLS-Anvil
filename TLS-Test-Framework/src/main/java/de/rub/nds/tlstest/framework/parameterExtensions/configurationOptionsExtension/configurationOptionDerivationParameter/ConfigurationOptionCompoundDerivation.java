@@ -174,22 +174,24 @@ public class ConfigurationOptionCompoundDerivation
                 derivationScope.getIpmLimitations().stream()
                         .map(ParameterIdentifier::getParameterType)
                         .collect(Collectors.toSet());
-        for (List<ConfigurationOptionDerivationParameter> setup :
-                ConfigurationOptionsDerivationManager.getInstance().getCompoundSetupList()) {
-            List<ConfigurationOptionDerivationParameter> constrainedSetupList =
-                    new LinkedList<>(setup);
-            // Scope Limitations (Set respective parameters to their default value)
-            for (int i = 0; i < constrainedSetupList.size(); i++) {
-                ParameterType type =
-                        constrainedSetupList.get(i).getParameterIdentifier().getParameterType();
-                if (scopeLimitations.contains(type)) {
-                    constrainedSetupList.set(
-                            i, constrainedSetupList.get(i).getDefaultValueParameter());
+        if (ConfigurationOptionsDerivationManager.getInstance().getCompoundSetupList() != null) {
+            for (List<ConfigurationOptionDerivationParameter> setup :
+                    ConfigurationOptionsDerivationManager.getInstance().getCompoundSetupList()) {
+                List<ConfigurationOptionDerivationParameter> constrainedSetupList =
+                        new LinkedList<>(setup);
+                // Scope Limitations (Set respective parameters to their default value)
+                for (int i = 0; i < constrainedSetupList.size(); i++) {
+                    ParameterType type =
+                            constrainedSetupList.get(i).getParameterIdentifier().getParameterType();
+                    if (scopeLimitations.contains(type)) {
+                        constrainedSetupList.set(
+                                i, constrainedSetupList.get(i).getDefaultValueParameter());
+                    }
                 }
+                parameterValues.add(
+                        new ConfigurationOptionCompoundDerivation(
+                                this.configOptionsSetupsList, constrainedSetupList));
             }
-            parameterValues.add(
-                    new ConfigurationOptionCompoundDerivation(
-                            this.configOptionsSetupsList, constrainedSetupList));
         }
         return parameterValues;
     }
