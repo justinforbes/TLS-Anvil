@@ -4,7 +4,8 @@ As an alternative to configuring TLS-Anvil via command line parameters, you can 
 The config file has to either contain a `serverConfig` or `clientConfig` section.
 
 Example config file `myConfig.json` for a server scan:
-``` json showLineNumbers
+
+```json showLineNumbers
 {
   "anvilTestConfig" : {
     "identifier" : "example_server_test",
@@ -26,10 +27,12 @@ Example config file `myConfig.json` for a server scan:
   "exportTraces" : false
 }
 ```
+
 All possible config options can be seen in the folder [config_examples](https://github.com/tls-attacker/TLS-Anvil/tree/main/config_examples).
 
 We can use the config file by invoking TLS-Anvil with the ```-tlsAnvilConfig``` parameter.
-``` bash showLineNumbers
+
+```bash showLineNumbers
 docker run \
     --rm \
     -it \
@@ -40,3 +43,4 @@ docker run \
     ghcr.io/tls-attacker/tlsanvil:latest \
     -tlsAnvilConfig /myConfig.json        
 ```
+

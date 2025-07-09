@@ -4,7 +4,8 @@ TLS-Anvil has the option to compare its test results with a set of expected resu
 To do this, you will need an expected results file in JSON format.
 
 Example `expected.json`:
-``` json showLineNumbers
+
+```json showLineNumbers
 {
   "STRICTLY_SUCCEEDED" : [ 
     "XLF-ia3wstdqYe",
@@ -30,7 +31,8 @@ Example `expected.json`:
 ```
 
 You can then start TLS-Anvil with the `-expectedResults` flag as follows:
-``` bash showLineNumbers
+
+```bash showLineNumbers
 docker run \
     --rm \
     -it \

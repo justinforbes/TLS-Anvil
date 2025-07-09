@@ -23,7 +23,7 @@ The application should be available at [http://localhost:5001](http://localhost:
 :::info
 
 A more detailed explanation of what you can do with Anvil Web is available under [Result Analysis](../Result-Analysis).
-Below, you can find a short description of the core principles.  
+Below, you can find a short description of the core principles.
 
 :::
 

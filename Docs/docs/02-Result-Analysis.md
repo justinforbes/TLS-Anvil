@@ -41,29 +41,29 @@ Each test has different properties, such as name, tags, categories and test resu
 * **Name:** The name contains the RFC number and is otherwise random. It can be filtered using the free text search.
 * **Tags:** Tags appear in gray after the name and provide additional information about the test, e.g. whether it is a TLS 1.2 (*tls12*) or TLS 1.3 test (*tls13*). Whether it is a server (*server*) or client test (*client*) or both (*both*). Tags can be filtered using the free text search.
 * **Categories:** Tests are grouped into different categories. A test can belong to several categories at the same time. The categories indicate approximately what the test does and what relevance this test has.
-    * **MessageStructure** → A test that checks whether the structure of messages is correct.
-    * **Handshake** → A test that checks the structure of the handshake.
-    * **Alert** → A test that checks for correctly sent alert messages.
-    * **Security** → A test that checks security-relevant specifications. Failure to pass may indicate vulnerability to an attack.
-    * **Interoperability** → A test in which failure to pass could mean that the tested software may not be compatible with other TLS libraries.
-    * **Crypto** → A test that tests cryptographic functions. Failure to pass could lead to a loss of cryptographic security guarantees.
-    * **RecordLayer** → Tests the RecordLayer of TLS.
-    * **DeprecatedFeature** → Tests which use features that should no longer be supported.
-    * **Certificate** → Tests that affect the certificate sent.
-    * **CVE** → Tests that check for known, old vulnerabilities.
+  * **MessageStructure** → A test that checks whether the structure of messages is correct.
+  * **Handshake** → A test that checks the structure of the handshake.
+  * **Alert** → A test that checks for correctly sent alert messages.
+  * **Security** → A test that checks security-relevant specifications. Failure to pass may indicate vulnerability to an attack.
+  * **Interoperability** → A test in which failure to pass could mean that the tested software may not be compatible with other TLS libraries.
+  * **Crypto** → A test that tests cryptographic functions. Failure to pass could lead to a loss of cryptographic security guarantees.
+  * **RecordLayer** → Tests the RecordLayer of TLS.
+  * **DeprecatedFeature** → Tests which use features that should no longer be supported.
+  * **Certificate** → Tests that affect the certificate sent.
+  * **CVE** → Tests that check for known, old vulnerabilities.
 * **Test result:** The test result indicates how the respective test was completed.
-    * Successful
-        * *Strictly Succeeded* → Test passed.
-        * *Conceptually Succeeded* → Test passed, but the connection was closed without notice.
-    * Failed
-        * *Fully Failed* → The test failed under every parameter combination. The tested software does not adhere to the RFC specification. The effects depend on the test.
-        * *Partially Failed* → The test failed for certain parameter combinations (e.g. the test only fails when a certain cipher suite is selected). This indicates that there is probably an implementation error.
-    * Error during execution (mainly relevant for developers of TLS-Anvil or if the TLS library still has compatibility problems)
-        * *Parser Error*
-        * *Not Specified*
-        * *Incomplete*
-        * *Test Suite Error*
-    * *Disabled* → the test was not executed because the function to be tested is not supported or it was manually disabled.
+  * Successful
+    * *Strictly Succeeded* → Test passed.
+    * *Conceptually Succeeded* → Test passed, but the connection was closed without notice.
+  * Failed
+    * *Fully Failed* → The test failed under every parameter combination. The tested software does not adhere to the RFC specification. The effects depend on the test.
+    * *Partially Failed* → The test failed for certain parameter combinations (e.g. the test only fails when a certain cipher suite is selected). This indicates that there is probably an implementation error.
+  * Error during execution (mainly relevant for developers of TLS-Anvil or if the TLS library still has compatibility problems)
+    * *Parser Error*
+    * *Not Specified*
+    * *Incomplete*
+    * *Test Suite Error*
+  * *Disabled* → the test was not executed because the function to be tested is not supported or it was manually disabled.
 
 **Debugging a Library**
 
@@ -103,3 +103,4 @@ The following may be relevant here:
 * **AdditionalResultInformation**: Useful information about the test. May contain more information about why it failed.
 * **Derivations**: The parameter combinations that were used.
 * **Network Traffic Capture**: Which messages were sent. TLS messages are marked in blue. The complete PCAP recording can be downloaded below and analyzed using tools such as Wireshark.
+
