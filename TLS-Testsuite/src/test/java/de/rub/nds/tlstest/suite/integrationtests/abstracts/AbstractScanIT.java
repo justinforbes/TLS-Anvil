@@ -20,6 +20,7 @@ import de.rub.nds.tls.subject.docker.DockerTlsInstance;
 import de.rub.nds.tls.subject.docker.DockerTlsManagerFactory;
 import de.rub.nds.tls.subject.docker.build.DockerBuilder;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.config.TlsTestConfig;
 import java.io.File;
@@ -40,7 +41,7 @@ public abstract class AbstractScanIT {
 
     protected AnvilTestConfig anvilTestConfig = new AnvilTestConfig();
     protected TlsTestConfig tlsConfig = new TlsTestConfig();
-    protected TestContext testContext = TestContext.getInstance();
+    protected TestContext testContext;
     protected DockerTlsInstance dockerInstance;
 
     private final TlsImplementationType implementation;
@@ -142,6 +143,7 @@ public abstract class AbstractScanIT {
         TestRunner testRunner =
                 new TestRunner(
                         anvilTestConfig, additionalConfig, new TlsParameterIdentifierProvider());
+        testContext = TestContextRegistry.createContext(testRunner.getContextId());
         testRunner.setListener(testContext);
         return testRunner;
     }

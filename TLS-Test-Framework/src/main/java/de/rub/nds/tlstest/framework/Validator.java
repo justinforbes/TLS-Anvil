@@ -70,6 +70,8 @@ public class Validator {
 
     public static void receivedFatalAlert(
             State state, AnvilTestCase testCase, boolean checkExecutedAsPlanned) {
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(testCase.getExtensionContext());
         WorkflowTrace trace = state.getWorkflowTrace();
         SocketState socketState = getSocketState(state);
         boolean lastActionFailed = false;
@@ -98,7 +100,7 @@ public class Validator {
             checkReceivedMultipleAlerts(testCase, trace);
             alertIsFatal = (lastAlert.getLevel().getValue() == AlertLevel.FATAL.getValue());
         }
-        if (TestContext.getInstance().getConfig().isUseDTLS()) return;
+        if (testContext.getConfig().isUseDTLS()) return;
         if (!socketClosed) {
             // must fail
             assertFalse(receivedAlert && alertIsFatal, "Socket still open after fatal alert");
@@ -120,7 +122,7 @@ public class Validator {
                             + messageString);
 
             if (!receivedAlert) {
-                if (mayOmitDueToTls13(state)) {
+                if (mayOmitDueToTls13(state, testContext)) {
                     testCase.addAdditionalResultInfo("SUT chose not to send an alert in TLS 1.3");
                 } else {
                     testCase.addAdditionalResultInfo("Only socket closed (" + socketState + ")");
@@ -142,9 +144,9 @@ public class Validator {
         }
     }
 
-    private static boolean mayOmitDueToTls13(State state) {
+    private static boolean mayOmitDueToTls13(State state, TestContext testContext) {
         return state.getConfig().getHighestProtocolVersion() == ProtocolVersion.TLS13
-                && !TestContext.getInstance().getConfig().isExpectTls13Alerts();
+                && !testContext.getConfig().isExpectTls13Alerts();
     }
 
     private static SocketState getSocketState(State state) {
@@ -268,6 +270,8 @@ public class Validator {
     }
 
     public static void smartExecutedAsPlanned(State state, AnvilTestCase testCase) {
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(testCase.getExtensionContext());
         checkForUnknownMessage(state, testCase);
         WorkflowTrace trace = state.getWorkflowTrace();
         if (state.getTlsContext().isReceivedMessageWithWrongTls13KeyType()
@@ -354,7 +358,7 @@ public class Validator {
                             return;
                         }
                     } else if (lastMessagesAreTooEarlyEncryptedAlertsTls13(
-                            state, testCase, action)) {
+                            state, testCase, action, testContext)) {
                         return;
                     }
                 }
@@ -424,7 +428,10 @@ public class Validator {
      * severity after receiving the first Fatal Alert (again to allow a Close Notify mostly)
      */
     private static boolean lastMessagesAreTooEarlyEncryptedAlertsTls13(
-            State state, AnvilTestCase testCase, ReceiveAction lastReceiveAction) {
+            State state,
+            AnvilTestCase testCase,
+            ReceiveAction lastReceiveAction,
+            TestContext testContext) {
         ProtocolMessage lastReceivedMessage =
                 lastReceiveAction
                         .getReceivedMessages()
@@ -440,8 +447,7 @@ public class Validator {
                 expectedFirstEncryptedRecordIndex = 1;
             }
             if (state.getConfig().getHighestProtocolVersion() == ProtocolVersion.TLS13
-                    && TestContext.getInstance().getConfig().getTestEndpointMode()
-                            == TestEndpointType.CLIENT
+                    && testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT
                     && state.getTlsContext().getActiveClientKeySetType() == Tls13KeySetType.NONE
                     && lastReceivedMessage instanceof ApplicationMessage) {
                 testCase.addAdditionalResultInfo(

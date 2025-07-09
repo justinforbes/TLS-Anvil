@@ -99,7 +99,8 @@ public class AnnotationReferences {
             Class<?> methodClass = method.getDeclaringClass();
             MethodCondition methodCondition = method.getAnnotation(MethodCondition.class);
             assertNotNull(
-                    MethodConditionExtension.getMethodForAnnotation(methodCondition, methodClass));
+                    MethodConditionExtension.getMethodForAnnotation(methodCondition, methodClass),
+                    "Failed to find " + methodCondition.method());
         }
     }
 }

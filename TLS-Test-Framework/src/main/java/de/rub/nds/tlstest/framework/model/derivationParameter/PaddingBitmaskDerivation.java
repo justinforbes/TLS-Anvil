@@ -17,6 +17,8 @@ import de.rub.nds.tlsattacker.core.constants.AlgorithmResolver;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.CipherType;
 import de.rub.nds.tlsattacker.core.constants.ProtocolVersion;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -49,6 +51,8 @@ public class PaddingBitmaskDerivation extends TlsDerivationParameter<Integer> {
     @Override
     public List<DerivationParameter<Config, Integer>> getParameterValues(
             DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         if (TlsParameterIdentifierProvider.isTls13Test(derivationScope)) {
             throw new RuntimeException(
                     "Padding bitmask is not configured for optional TLS 1.3 record padding");

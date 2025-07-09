@@ -19,7 +19,6 @@ import de.rub.nds.tlsattacker.core.constants.ExtensionType;
 import de.rub.nds.tlsattacker.core.constants.ProtocolVersion;
 import de.rub.nds.tlsattacker.core.protocol.message.extension.HeartbeatExtensionMessage;
 import de.rub.nds.tlstest.framework.ClientFeatureExtractionResult;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.annotations.KeyExchange;
 import de.rub.nds.tlstest.framework.annotations.TlsVersion;
 import de.rub.nds.tlstest.framework.constants.KeyExchangeType;
@@ -31,7 +30,7 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 public class HeartbeatExtension extends TlsLengthfieldTest {
 
     public ConditionEvaluationResult targetCanBeTested() {
-        if (TestContext.getInstance().getConfig().getTestEndpointMode() == TestEndpointType.SERVER
+        if (context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER
                 || ((ClientFeatureExtractionResult) context.getFeatureExtractionResult())
                         .getReceivedClientHello()
                         .containsExtension(ExtensionType.HEARTBEAT)) {

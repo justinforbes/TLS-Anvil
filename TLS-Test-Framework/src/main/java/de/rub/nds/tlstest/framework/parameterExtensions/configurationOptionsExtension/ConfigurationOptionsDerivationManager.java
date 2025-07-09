@@ -233,7 +233,7 @@ public class ConfigurationOptionsDerivationManager {
             Set<ConfigurationOptionDerivationParameter> setupSet = new HashSet<>(setup);
             Config conf = Config.createEmptyConfig();
             Future<Callable<FeatureExtractionResult>> testSiteReportCallableFuture =
-                    getFeatureExtractionFuture(conf, TestContext.getInstance(), setupSet);
+                    getFeatureExtractionFuture(conf, config.getTestContext(), setupSet);
             compoundSetupToFuture.put(setup, testSiteReportCallableFuture);
         }
 

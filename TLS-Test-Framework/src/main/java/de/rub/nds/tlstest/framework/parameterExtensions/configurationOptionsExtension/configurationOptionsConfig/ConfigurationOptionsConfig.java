@@ -47,6 +47,7 @@ public class ConfigurationOptionsConfig {
     private String tlsLibraryName;
     private String tlsVersionName;
     private DockerBasedBuildManager buildManager;
+    private final TestContext testContext;
 
     private final Map<ConfigOptionParameterType, ConfigOptionValueTranslation> optionsToTranslation;
 
@@ -80,16 +81,19 @@ public class ConfigurationOptionsConfig {
     private static final int DEFAULT_MAX_RUNNING_CONTAINERS = 16;
     private static final int DEFAULT_MAX_RUNNING_SHUTDOWN_CONTAINERS = 8;
 
-    public ConfigurationOptionsConfig(Path configFilePath) throws FileNotFoundException {
+    public ConfigurationOptionsConfig(Path configFilePath, TestContext testContext)
+            throws FileNotFoundException {
         optionsToTranslation = new HashMap<>();
         parseConfigFile(new FileInputStream(configFilePath.toFile()));
-        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this));
+        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
+        this.testContext = testContext;
     }
 
-    public ConfigurationOptionsConfig(InputStream inputStream) {
+    public ConfigurationOptionsConfig(InputStream inputStream, TestContext testContext) {
         optionsToTranslation = new HashMap<>();
+        this.testContext = testContext;
         parseConfigFile(inputStream);
-        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this));
+        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
     }
 
     public String getTlsLibraryName() {
@@ -194,10 +198,7 @@ public class ConfigurationOptionsConfig {
                     Integer.parseInt(configOptionsIpmStrengthElement.getTextContent());
         } else {
             configOptionsIpmStrength =
-                    TestContext.getInstance()
-                            .getConfig()
-                            .getAnvilTestConfig()
-                            .getStrength(); // default
+                    testContext.getConfig().getAnvilTestConfig().getStrength(); // default
         }
     }
 
@@ -258,7 +259,7 @@ public class ConfigurationOptionsConfig {
                     XmlParseUtils.findElement(
                             dockerConfigElement,
                             "dockerClientDestinationHost",
-                            (TestContext.getInstance().getConfig().getTestEndpointMode()
+                            (testContext.getConfig().getTestEndpointMode()
                                     == TestEndpointType.CLIENT));
             if (dockerClientDestElement != null) {
                 dockerClientDestinationHostName = dockerClientDestElement.getTextContent();
@@ -317,7 +318,7 @@ public class ConfigurationOptionsConfig {
                 throw new RuntimeException(
                         "dockerConfig field is required for using the OpenSSLBuildManager");
             }
-            return new DockerBasedBuildManager(this, new DockerFactory(this));
+            return new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
         }
         throw new UnsupportedOperationException(
                 String.format(
@@ -357,5 +358,9 @@ public class ConfigurationOptionsConfig {
 
     public DockerBasedBuildManager getBuildManager() {
         return buildManager;
+    }
+
+    public TestContext getTestContext() {
+        return testContext;
     }
 }

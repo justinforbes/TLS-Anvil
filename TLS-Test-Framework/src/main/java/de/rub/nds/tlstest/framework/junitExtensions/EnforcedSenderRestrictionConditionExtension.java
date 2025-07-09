@@ -7,7 +7,7 @@
  */
 package de.rub.nds.tlstest.framework.junitExtensions;
 
-import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.annotations.EnforcedSenderRestriction;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
@@ -25,7 +25,9 @@ public class EnforcedSenderRestrictionConditionExtension extends BaseCondition {
 
         if ((testMethod.isAnnotationPresent(EnforcedSenderRestriction.class)
                         || testClass.isAnnotationPresent(EnforcedSenderRestriction.class))
-                && !TestContext.getInstance().getConfig().isEnforceSenderRestrictions()) {
+                && !TestContextRegistry.byExtensionContext(extensionContext)
+                        .getConfig()
+                        .isEnforceSenderRestrictions()) {
             return ConditionEvaluationResult.disabled(
                     "Sender restrictions are not expected to be enforced");
         }

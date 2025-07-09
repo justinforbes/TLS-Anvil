@@ -13,20 +13,22 @@ import de.rub.nds.tlsattacker.core.protocol.message.ClientHelloMessage;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlstest.framework.config.TlsTestConfig;
 import de.rub.nds.tlstest.framework.execution.TestPreparator;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsExtension;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.platform.launcher.TestPlan;
 
 /**
- * Shared global Singleton object that stores information that are used by the JUnit extensions and
- * the test cases.
+ * Context object that stores information that are used by the JUnit extensions and the test cases.
+ * This class no longer uses the singleton pattern and should be managed through
+ * TestContextRegistry.
  */
 public class TestContext implements AnvilListener {
     private static final Logger LOGGER = LogManager.getLogger();
     private TlsTestConfig config;
 
-    private static TestContext instance = null;
     private ParallelExecutor stateExecutor;
+    private ConfigurationOptionsExtension configurationOptionsExtension;
 
     private FeatureExtractionResult featureExtractionResult = null;
     private ClientHelloMessage receivedClientHelloMessage;
@@ -34,16 +36,24 @@ public class TestContext implements AnvilListener {
     private int serverHandshakesSinceRestart = 0;
     private boolean aborted = false;
 
-    public static synchronized TestContext getInstance() {
-        if (TestContext.instance == null) {
-            TestContext.instance = new TestContext();
-        }
-        return TestContext.instance;
-    }
+    /*public static synchronized TestContext getInstance() {
+        System.out.println("Deprecated getInstance used!");
+        return TestContextRegistry.getAnyContext();
+    }*/
 
-    private TestContext() {
+    public TestContext() {
         super();
         this.config = new TlsTestConfig();
+        config.setTestContext(this);
+    }
+
+    public void setConfigurationOptionsExtension(
+            ConfigurationOptionsExtension configurationOptionsExtension) {
+        this.configurationOptionsExtension = configurationOptionsExtension;
+    }
+
+    public ConfigurationOptionsExtension getConfigurationOptionsExtension() {
+        return configurationOptionsExtension;
     }
 
     public synchronized TlsTestConfig getConfig() {
@@ -100,7 +110,7 @@ public class TestContext implements AnvilListener {
         // print out test counts before each run
         TestPreparator.printTestInfo(testPlan);
         // run TestPreparator before each run
-        return new TestPreparator(getConfig(), this).prepareTestExecution();
+        return new TestPreparator(getConfig(), this).prepareTestExecution(testPlan);
     }
 
     @Override

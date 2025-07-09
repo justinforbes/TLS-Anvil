@@ -56,6 +56,7 @@ public class DockerBasedBuildManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
     protected DockerFactory dockerFactory;
+    private TestContext testContext;
     protected ConfigOptionsMetadataResultsCollector resultsCollector;
     protected ConfigurationOptionsConfig configOptionsConfig;
     protected Map<String, DockerTestContainer> dockerTagToContainerInfo;
@@ -91,17 +92,19 @@ public class DockerBasedBuildManager {
      * @param dockerFactory The docker factory to used. Should be chosen by the subclass
      */
     public DockerBasedBuildManager(
-            ConfigurationOptionsConfig configurationOptionsConfig, DockerFactory dockerFactory) {
+            ConfigurationOptionsConfig configurationOptionsConfig,
+            DockerFactory dockerFactory,
+            TestContext testContext) {
         this.dockerFactory = dockerFactory;
         this.configOptionsConfig = configurationOptionsConfig;
+        this.testContext = testContext;
         dockerTagToContainerInfo = new HashMap<>();
         dockerTagToAccessCount = new HashMap<>();
         usedPorts = new HashSet<>();
         this.dockerTlsImplementation =
                 TlsImplementationType.valueOf(configurationOptionsConfig.getTlsLibraryName());
         this.libraryVersion = configurationOptionsConfig.getTlsVersionName();
-        if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                == TestEndpointType.CLIENT) {
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             this.libraryConnectionRole = ConnectionRole.CLIENT;
         } else {
             this.libraryConnectionRole = ConnectionRole.SERVER;
@@ -113,23 +116,16 @@ public class DockerBasedBuildManager {
 
         ParallelExecutor executor =
                 new ParallelExecutorWithTimeout(
-                        TestContext.getInstance()
-                                .getConfig()
-                                .getAnvilTestConfig()
-                                .getParallelTestCases(),
+                        testContext.getConfig().getAnvilTestConfig().getParallelTestCases(),
                         1,
                         600);
-        TestContext.getInstance().setStateExecutor(executor);
+        testContext.setStateExecutor(executor);
 
         setBuildConfigClientTestCallbacks(executor);
 
         resultsCollector =
                 new ConfigOptionsMetadataResultsCollector(
-                        Paths.get(
-                                TestContext.getInstance()
-                                        .getConfig()
-                                        .getAnvilTestConfig()
-                                        .getOutputFolder()),
+                        Paths.get(testContext.getConfig().getAnvilTestConfig().getOutputFolder()),
                         configOptionsConfig,
                         dockerFactory.getDockerClient());
 
@@ -145,15 +141,11 @@ public class DockerBasedBuildManager {
      * @param executor The parallel executor to use
      */
     private void setBuildConfigClientTestCallbacks(ParallelExecutor executor) {
-        if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                == TestEndpointType.CLIENT) {
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             executor.setDefaultBeforeTransportPreInitCallback(
-                    TestPreparator.getSocketManagementCallback());
+                    TestPreparator.getSocketManagementCallback(testContext));
             executor.setDefaultBeforeTransportInitCallback(
-                    TestContext.getInstance()
-                            .getConfig()
-                            .getTestClientDelegate()
-                            .getTriggerScript());
+                    testContext.getConfig().getTestClientDelegate().getTriggerScript());
         }
     }
 
@@ -179,8 +171,7 @@ public class DockerBasedBuildManager {
             stopRarelyUsedContainers();
 
             // Configure the port in the config
-            if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                    == TestEndpointType.SERVER) {
+            if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
                 DockerServerTestContainer serverContainerInfo =
                         (DockerServerTestContainer) dockerTestContainer;
                 OutboundConnection connection =
@@ -188,8 +179,7 @@ public class DockerBasedBuildManager {
                                 serverContainerInfo.getTlsServerPort(),
                                 configOptionsConfig.getDockerHostName());
                 config.setDefaultClientConnection(connection);
-            } else if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                    == TestEndpointType.CLIENT) {
+            } else if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
                 DockerClientTestContainer clientContainerInfo =
                         (DockerClientTestContainer) dockerTestContainer;
 
@@ -254,8 +244,7 @@ public class DockerBasedBuildManager {
                 }
             }
             synchronized (this) {
-                if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                        == TestEndpointType.CLIENT) {
+                if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
                     DockerClientTestContainer container =
                             dockerFactory.createDockerClient(
                                     dockerTlsImplementation,
@@ -267,10 +256,10 @@ public class DockerBasedBuildManager {
                                     occupyNextPort());
                     TestCOMultiClientDelegate delegate =
                             (TestCOMultiClientDelegate)
-                                    TestContext.getInstance().getConfig().getTestClientDelegate();
+                                    testContext.getConfig().getTestClientDelegate();
                     delegate.registerNewConnection(container);
                     providedContainer = container;
-                } else if (TestContext.getInstance().getConfig().getTestEndpointMode()
+                } else if (testContext.getConfig().getTestEndpointMode()
                         == TestEndpointType.SERVER) {
                     providedContainer =
                             dockerFactory.createDockerServer(
@@ -390,7 +379,7 @@ public class DockerBasedBuildManager {
         boolean portFound = false;
         for (port = portRange.getMinPort(); port <= portRange.getMaxPort(); port++) {
             if (!usedPorts.contains(port)) {
-                if (DockerBasedBuildManager.isPortAvailable(port)) {
+                if (isPortAvailable(port)) {
                     portFound = true;
                     break;
                 }
@@ -421,13 +410,13 @@ public class DockerBasedBuildManager {
      * @param port - the port to check
      * @return true iff the port is still available
      */
-    protected static boolean isPortAvailable(int port) {
+    protected boolean isPortAvailable(int port) {
 
         ServerSocket ss = null;
         DatagramSocket ds = null;
         boolean bound = false;
         try {
-            if (TestContext.getInstance().getConfig().isUseDTLS()) {
+            if (testContext.getConfig().isUseDTLS()) {
                 ds = new DatagramSocket();
                 ds.setReuseAddress(true);
                 ds.bind(new InetSocketAddress(port));
@@ -466,10 +455,9 @@ public class DockerBasedBuildManager {
      */
     private synchronized void configDefaultConnection() {
 
-        if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                == TestEndpointType.CLIENT) {
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             TestCOMultiClientDelegate delegate = new TestCOMultiClientDelegate();
-            TestContext.getInstance().getConfig().setTestClientDelegate(delegate);
+            testContext.getConfig().setTestClientDelegate(delegate);
 
             if (maximalFeatureContainerDockerTag == null) {
                 Set<ConfigurationOptionDerivationParameter> optionSet = getMaxFeatureOptionSet();
@@ -486,8 +474,7 @@ public class DockerBasedBuildManager {
                     (DockerClientTestContainer) containerInfo;
             delegate.configureDefaultInboundPort(clientContainerInfo.getInboundConnectionPort());
 
-        } else if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                == TestEndpointType.SERVER) {
+        } else if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
             if (maximalFeatureContainerDockerTag == null) {
                 Set<ConfigurationOptionDerivationParameter> optionSet = getMaxFeatureOptionSet();
                 maximalFeatureContainerDockerTag = provideDockerContainer(optionSet);
@@ -506,7 +493,7 @@ public class DockerBasedBuildManager {
                             "%s:%d",
                             configOptionsConfig.getDockerHostName(),
                             serverContainerInfo.getTlsServerPort());
-            TestContext.getInstance().getConfig().getTestServerDelegate().setHost(hostWithPort);
+            testContext.getConfig().getTestServerDelegate().setHost(hostWithPort);
         } else {
             throw new IllegalStateException("TestEndpointMode is invalid.");
         }

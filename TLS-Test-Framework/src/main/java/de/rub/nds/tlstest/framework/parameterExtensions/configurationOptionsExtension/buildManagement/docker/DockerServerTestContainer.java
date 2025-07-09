@@ -41,8 +41,9 @@ public class DockerServerTestContainer extends DockerTestContainer {
             String containerId,
             String dockerHost,
             Integer managerPort,
-            Integer tlsServerPort) {
-        super(dockerClient, dockerTag, containerId, dockerHost, managerPort);
+            Integer tlsServerPort,
+            TestContext testContext) {
+        super(dockerClient, dockerTag, containerId, dockerHost, managerPort, testContext);
         this.tlsServerPort = tlsServerPort;
     }
 
@@ -59,11 +60,8 @@ public class DockerServerTestContainer extends DockerTestContainer {
                         new GeneralDelegate(),
                         testServerDelegate,
                         parallelExecutor,
-                        TestContext.getInstance()
-                                .getConfig()
-                                .getAnvilTestConfig()
-                                .getConnectionTimeout(),
-                        TestContext.getInstance().getConfig().isUseDTLS(),
+                        testContext.getConfig().getAnvilTestConfig().getConnectionTimeout(),
+                        testContext.getConfig().isUseDTLS(),
                         false);
         return ServerFeatureExtractionResult.fromServerScanReport(scanner.scan());
     }

@@ -12,8 +12,10 @@ package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExt
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.context.AnvilTestConfig;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.SeedingMethodDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.*;
@@ -22,7 +24,8 @@ import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
 public class ConfigurationOptionsConfigTest {
-    public static ConfigurationOptionsConfig createTestConfig() {
+    public static ConfigurationOptionsConfig createTestConfig(String contextId) {
+        TestContext testContext = TestContextRegistry.createContext(contextId);
         String testFileContent =
                 """
                     <config>
@@ -66,7 +69,7 @@ public class ConfigurationOptionsConfigTest {
 
         InputStream is = new ByteArrayInputStream(testFileContent.getBytes());
 
-        return new ConfigurationOptionsConfig(is);
+        return new ConfigurationOptionsConfig(is, testContext);
     }
 
     @Test
@@ -74,8 +77,10 @@ public class ConfigurationOptionsConfigTest {
         AnvilTestConfig testConfig = new AnvilTestConfig();
         testConfig.setParallelTestCases(1);
         testConfig.setParallelTests(1);
-        AnvilContext.createInstance(testConfig, "", new TlsParameterIdentifierProvider());
-        ConfigurationOptionsConfig config = createTestConfig();
+        String contextId =
+                AnvilContextRegistry.createContext(
+                        testConfig, null, new TlsParameterIdentifierProvider());
+        ConfigurationOptionsConfig config = createTestConfig(contextId);
 
         assertEquals("OPENSSL", config.getTlsLibraryName());
         assertEquals("1.1.1.i", config.getTlsVersionName());

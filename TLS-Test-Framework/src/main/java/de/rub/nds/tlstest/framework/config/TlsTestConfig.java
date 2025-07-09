@@ -78,6 +78,8 @@ public class TlsTestConfig extends TLSDelegateConfig {
 
     private ConfigDelegates parsedCommand = null;
 
+    private TestContext testContext;
+
     @JsonProperty("exportTraces")
     @Parameter(
             names = "-exportTraces",
@@ -109,6 +111,10 @@ public class TlsTestConfig extends TLSDelegateConfig {
         this.testClientDelegate = new TestClientDelegate();
         this.testExtractorDelegate = new TestExtractorDelegate();
         this.workerDelegate = new WorkerDelegate();
+    }
+
+    public void setTestContext(TestContext testContext) {
+        this.testContext = testContext;
     }
 
     /**
@@ -321,11 +327,10 @@ public class TlsTestConfig extends TLSDelegateConfig {
     public synchronized Config createConfig() {
         if (cachedConfig != null) {
             Config config = cachedConfig.createCopy();
-            FeatureExtractionResult report = TestContext.getInstance().getFeatureExtractionResult();
+            FeatureExtractionResult report = testContext.getFeatureExtractionResult();
             if (report != null) {
                 List<CipherSuite> supported = new ArrayList<>();
-                if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                        == TestEndpointType.CLIENT) {
+                if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
                     if (!report.getCipherSuites()
                             .contains(config.getDefaultSelectedCipherSuite())) {
                         supported.addAll(report.getCipherSuites());
@@ -468,11 +473,10 @@ public class TlsTestConfig extends TLSDelegateConfig {
     }
 
     public boolean checkRenegotiationInfoOffer() {
-        if (TestContext.getInstance().getConfig().getTestEndpointMode() == TestEndpointType.CLIENT
-                && TestContext.getInstance().getFeatureExtractionResult() != null) {
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT
+                && testContext.getFeatureExtractionResult() != null) {
             ClientFeatureExtractionResult extractionResult =
-                    (ClientFeatureExtractionResult)
-                            TestContext.getInstance().getFeatureExtractionResult();
+                    (ClientFeatureExtractionResult) testContext.getFeatureExtractionResult();
             if (!((CollectionResult)
                                     extractionResult.getResult(
                                             TlsAnalyzedProperty.CLIENT_ADVERTISED_CIPHERSUITES))

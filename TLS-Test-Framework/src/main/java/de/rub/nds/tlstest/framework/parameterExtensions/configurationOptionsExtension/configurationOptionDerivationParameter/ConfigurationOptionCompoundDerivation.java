@@ -19,7 +19,7 @@ import de.rub.nds.anvilcore.model.parameter.ParameterType;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
-import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
@@ -161,7 +161,11 @@ public class ConfigurationOptionCompoundDerivation
                 new HashSet<>(getSelectedValue());
         ConfigurationOptionsDerivationManager.getInstance()
                 .getConfigurationOptionsBuildManager()
-                .preparePeerConnection(config, TestContext.getInstance(), configOptionDerivations);
+                .preparePeerConnection(
+                        config,
+                        TestContextRegistry.byExtensionContext(
+                                derivationScope.getExtensionContext()),
+                        configOptionDerivations);
     }
 
     @Override

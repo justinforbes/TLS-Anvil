@@ -15,6 +15,7 @@ import de.rub.nds.tlsattacker.core.protocol.message.ServerKeyExchangeMessage;
 import de.rub.nds.tlsattacker.core.workflow.factory.WorkflowConfigurationFactory;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.annotations.KeyExchange;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -74,9 +75,7 @@ public class KeyX implements KeyExchange {
      * filters supportedKxs, so that it only contains the KeyExchangeTypes that are actually
      * supported by the server/client.
      */
-    public void filterSupportedKexs() {
-        TestContext context = TestContext.getInstance();
-        FeatureExtractionResult report = context.getFeatureExtractionResult();
+    public void filterSupportedKexs(FeatureExtractionResult report) {
         if (cipherSuiteSkeCache == null) {
             buildCache();
         }
@@ -119,6 +118,11 @@ public class KeyX implements KeyExchange {
     }
 
     public static KeyExchange resolveKexAnnotation(ExtensionContext context) {
+        return resolveKexAnnotation(context, TestContextRegistry.byExtensionContext(context));
+    }
+
+    public static KeyExchange resolveKexAnnotation(
+            ExtensionContext context, TestContext testContext) {
         Method testMethod = context.getRequiredTestMethod();
         Class<?> testClass = context.getRequiredTestClass();
         KeyX resolvedKeyExchange = new KeyX();
@@ -166,7 +170,7 @@ public class KeyX implements KeyExchange {
         }
 
         if (resolvedKeyExchange.supported().length > 0) {
-            resolvedKeyExchange.filterSupportedKexs();
+            resolvedKeyExchange.filterSupportedKexs(testContext.getFeatureExtractionResult());
         } else {
             resolvedKeyExchange.setSupportedKxs(new KeyExchangeType[0]);
         }

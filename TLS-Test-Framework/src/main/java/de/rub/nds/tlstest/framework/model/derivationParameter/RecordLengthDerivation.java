@@ -12,6 +12,8 @@ import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.scanner.core.probe.result.TestResults;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import java.util.LinkedList;
@@ -32,6 +34,8 @@ public class RecordLengthDerivation extends TlsDerivationParameter<Integer> {
     public List<DerivationParameter<Config, Integer>> getParameterValues(
             DerivationScope derivationScope) {
         List<DerivationParameter<Config, Integer>> parameterValues = new LinkedList<>();
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
 
         if (context.getFeatureExtractionResult()
                         .getResult(TlsAnalyzedProperty.SUPPORTS_RECORD_FRAGMENTATION)

@@ -45,8 +45,9 @@ public class DockerClientTestContainer extends DockerTestContainer {
             String dockerHost,
             Integer managerPort,
             String inboundConnectionHost,
-            Integer inboundConnectionPort) {
-        super(dockerClient, dockerTag, containerId, dockerHost, managerPort);
+            Integer inboundConnectionPort,
+            TestContext testContext) {
+        super(dockerClient, dockerTag, containerId, dockerHost, managerPort, testContext);
 
         this.inboundConnectionHost = inboundConnectionHost;
         this.inboundConnectionPort = inboundConnectionPort;
@@ -62,23 +63,18 @@ public class DockerClientTestContainer extends DockerTestContainer {
         ClientScannerConfig scannerConfig =
                 TestPreparator.getClientScannerConfig(
                         inboundConnectionPort,
-                        TestContext.getInstance()
-                                .getConfig()
-                                .getAnvilTestConfig()
-                                .getConnectionTimeout(),
-                        TestContext.getInstance()
-                                .getConfig()
-                                .getTestClientDelegate()
-                                .getTriggerScript(),
-                        TestContext.getInstance().getConfig().isUseDTLS());
+                        testContext.getConfig().getAnvilTestConfig().getConnectionTimeout(),
+                        testContext.getConfig().getTestClientDelegate().getTriggerScript(),
+                        testContext.getConfig().isUseDTLS());
         TlsClientScanner clientScanner = new TlsClientScanner(scannerConfig, parallelExecutor);
         ClientHelloMessage clientHello =
-                TestPreparator.catchClientHello(parallelExecutor, inboundConnectionPort);
+                TestPreparator.catchClientHello(
+                        parallelExecutor, inboundConnectionPort, testContext);
         ClientFeatureExtractionResult clientFeatureExtractionResult =
                 ClientFeatureExtractionResult.fromClientScanReport(clientScanner.scan(), dockerTag);
         clientFeatureExtractionResult.setReceivedClientHello(clientHello);
-        if (TestContext.getInstance().getReceivedClientHelloMessage() == null) {
-            TestContext.getInstance().setReceivedClientHelloMessage(clientHello);
+        if (testContext.getReceivedClientHelloMessage() == null) {
+            testContext.setReceivedClientHelloMessage(clientHello);
         }
         return clientFeatureExtractionResult;
     }

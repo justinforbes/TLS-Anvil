@@ -21,6 +21,7 @@ import de.rub.nds.tlsattacker.core.constants.NamedGroup;
 import de.rub.nds.tlsattacker.core.constants.SignatureAndHashAlgorithm;
 import de.rub.nds.tlstest.framework.ClientFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -49,12 +50,14 @@ public class SigAndHashDerivation extends TlsDerivationParameter<SignatureAndHas
             DerivationScope derivationScope) {
         List<DerivationParameter<Config, SignatureAndHashAlgorithm>> parameterValues =
                 new LinkedList<>();
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         if (context.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             ClientFeatureExtractionResult extractionResult =
                     (ClientFeatureExtractionResult) context.getFeatureExtractionResult();
             if (extractionResult.getAdvertisedSignatureAndHashAlgorithms() == null
                     || extractionResult.getAdvertisedSignatureAndHashAlgorithms().isEmpty()) {
-                parameterValues = getClientTestDefaultAlgorithms();
+                parameterValues = getClientTestDefaultAlgorithms(context);
             } else {
                 parameterValues = getClientTestAlgorithms(extractionResult, derivationScope);
             }
@@ -68,38 +71,35 @@ public class SigAndHashDerivation extends TlsDerivationParameter<SignatureAndHas
     }
 
     private List<DerivationParameter<Config, SignatureAndHashAlgorithm>>
-            getClientTestDefaultAlgorithms() {
+            getClientTestDefaultAlgorithms(TestContext context) {
         List<DerivationParameter<Config, SignatureAndHashAlgorithm>> parameterValues =
                 new LinkedList<>();
         // the applied algorithm depends on the chosen ciphersuite - see constraints
         // TLS 1.3 clients must send the extension if they expect a server cert
-        if (supportsAnyRSA()) {
+        if (supportsAnyRSA(context)) {
             parameterValues.add(new SigAndHashDerivation(SignatureAndHashAlgorithm.RSA_SHA1));
         }
-        if (supportsAnyECDSA()) {
+        if (supportsAnyECDSA(context)) {
             parameterValues.add(new SigAndHashDerivation(SignatureAndHashAlgorithm.ECDSA_SHA1));
         }
-        if (supportsAnyDSA()) {
+        if (supportsAnyDSA(context)) {
             parameterValues.add(new SigAndHashDerivation(SignatureAndHashAlgorithm.DSA_SHA1));
         }
 
         return parameterValues;
     }
 
-    private boolean supportsAnyRSA() {
-        TestContext testContext = TestContext.getInstance();
+    private boolean supportsAnyRSA(TestContext testContext) {
         return testContext.getFeatureExtractionResult().getCipherSuites().stream()
                 .anyMatch(cipherSuite -> cipherSuite.name().contains("RSA"));
     }
 
-    private boolean supportsAnyECDSA() {
-        TestContext testContext = TestContext.getInstance();
+    private boolean supportsAnyECDSA(TestContext testContext) {
         return testContext.getFeatureExtractionResult().getCipherSuites().stream()
                 .anyMatch(CipherSuite::isECDSA);
     }
 
-    private boolean supportsAnyDSA() {
-        TestContext testContext = TestContext.getInstance();
+    private boolean supportsAnyDSA(TestContext testContext) {
         return testContext.getFeatureExtractionResult().getCipherSuites().stream()
                 .anyMatch(CipherSuite::isDSS);
     }
@@ -126,6 +126,8 @@ public class SigAndHashDerivation extends TlsDerivationParameter<SignatureAndHas
 
     @Override
     public void applyToConfig(Config config, DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         if (getSelectedValue() != null) {
             config.setAutoAdjustSignatureAndHashAlgorithm(false);
             config.setDefaultSelectedSignatureAndHashAlgorithm(getSelectedValue());
@@ -154,8 +156,7 @@ public class SigAndHashDerivation extends TlsDerivationParameter<SignatureAndHas
 
     public static List<ConditionalConstraint> getDefaultPreTls13Constraints(DerivationScope scope) {
         List<ConditionalConstraint> condConstraints = new LinkedList<>();
-        TestContext context = TestContext.getInstance();
-
+        TestContext context = TestContextRegistry.byExtensionContext(scope.getExtensionContext());
         if ((context.getFeatureExtractionResult().getSignatureAndHashAlgorithmsForDerivation()
                         == null
                 || context.getFeatureExtractionResult()

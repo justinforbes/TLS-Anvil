@@ -13,6 +13,7 @@ import de.rub.nds.anvilcore.constants.TestEndpointType;
 import de.rub.nds.anvilcore.junit.extension.EndpointConditionExtension;
 import de.rub.nds.anvilcore.teststate.reporting.MetadataFetcher;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.annotations.EnforcedSenderRestriction;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 
 public class TestCaseExtractor {
+    public static final String TEST_EXTRACTOR_CONTEXT_ID = "TestCaseExtractorContext";
     private static final Logger LOGGER = LogManager.getLogger(TestCaseExtractor.class);
 
     private String packageName;
@@ -42,8 +44,8 @@ public class TestCaseExtractor {
     }
 
     public void start() {
-        boolean detailedOutput =
-                TestContext.getInstance().getConfig().getTestExtractorDelegate().isDetailed();
+        TestContext testContext = TestContextRegistry.getContext(TEST_EXTRACTOR_CONTEXT_ID);
+        boolean detailedOutput = testContext.getConfig().getTestExtractorDelegate().isDetailed();
 
         fetcher = new MetadataFetcher();
 
@@ -168,7 +170,7 @@ public class TestCaseExtractor {
                                         rfcHtml.getPrintableCounters());
                             }
                             rfcHtml.saveToFolder(
-                                    TestContext.getInstance()
+                                    testContext
                                             .getConfig()
                                             .getTestExtractorDelegate()
                                             .getOutputFolder());

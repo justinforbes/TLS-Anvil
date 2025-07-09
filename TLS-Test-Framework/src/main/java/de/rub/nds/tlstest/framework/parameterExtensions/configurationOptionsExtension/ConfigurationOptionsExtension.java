@@ -28,17 +28,13 @@ public class ConfigurationOptionsExtension {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static ConfigurationOptionsExtension instance = null;
     private ConfigurationOptionsConfig config;
+    private final TestContext testContext;
 
-    public static synchronized ConfigurationOptionsExtension getInstance() {
-        if (ConfigurationOptionsExtension.instance == null) {
-            ConfigurationOptionsExtension.instance = new ConfigurationOptionsExtension();
-        }
-        return ConfigurationOptionsExtension.instance;
+    public ConfigurationOptionsExtension(TestContext testContex) {
+        this.testContext = testContex;
+        testContext.setConfigurationOptionsExtension(this);
     }
-
-    private ConfigurationOptionsExtension() {}
 
     public void load(Object initData) {
         if (!(initData instanceof String)) {
@@ -54,7 +50,7 @@ public class ConfigurationOptionsExtension {
                             configPath.toAbsolutePath()));
         }
         try {
-            config = new ConfigurationOptionsConfig(configPath);
+            config = new ConfigurationOptionsConfig(configPath, testContext);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(
@@ -76,7 +72,7 @@ public class ConfigurationOptionsExtension {
 
         FeatureExtractionResult maxFeatureExtractionResult =
                 config.getBuildManager().getMaximalFeatureExtractionResult();
-        TestContext.getInstance().setFeatureExtractionResult(maxFeatureExtractionResult);
+        testContext.setFeatureExtractionResult(maxFeatureExtractionResult);
     }
 
     public void shutdown() {
