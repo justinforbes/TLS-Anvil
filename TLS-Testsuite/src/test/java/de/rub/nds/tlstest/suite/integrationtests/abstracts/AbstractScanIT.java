@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.model.Image;
 import com.google.common.collect.Sets;
-import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.context.AnvilTestConfig;
 import de.rub.nds.anvilcore.execution.TestRunner;
 import de.rub.nds.anvilcore.teststate.TestResult;
@@ -43,6 +43,7 @@ public abstract class AbstractScanIT {
     protected TlsTestConfig tlsConfig = new TlsTestConfig();
     protected TestContext testContext;
     protected DockerTlsInstance dockerInstance;
+    protected String contextId;
 
     private final TlsImplementationType implementation;
     private final String version;
@@ -143,6 +144,7 @@ public abstract class AbstractScanIT {
         TestRunner testRunner =
                 new TestRunner(
                         anvilTestConfig, additionalConfig, new TlsParameterIdentifierProvider());
+        contextId = testRunner.getContextId();
         testContext = TestContextRegistry.createContext(testRunner.getContextId());
         testRunner.setListener(testContext);
         return testRunner;
@@ -167,7 +169,8 @@ public abstract class AbstractScanIT {
             throw new TestAbortedException();
         }
 
-        Map<TestResult, Set<String>> results = AnvilContext.getInstance().getResultsTestRuns();
+        Map<TestResult, Set<String>> results =
+                AnvilContextRegistry.getContext(contextId).getResultsTestRuns();
         Map<String, TestResult> orderedActualResults = new HashMap<>();
         Map<String, TestResult> orderedExpectedResults = new HashMap<>();
         for (Map.Entry<TestResult, Set<String>> entry : results.entrySet()) {
@@ -220,7 +223,8 @@ public abstract class AbstractScanIT {
         String serializeResultsFileName =
                 "result_test_map_" + anvilTestConfig.getIdentifier() + version + ".json";
         File f = new File(anvilTestConfig.getOutputFolder(), serializeResultsFileName);
-        Map<TestResult, Set<String>> results = AnvilContext.getInstance().getResultsTestRuns();
+        Map<TestResult, Set<String>> results =
+                AnvilContextRegistry.getContext(contextId).getResultsTestRuns();
         try {
             mapper.writeValue(f, results);
         } catch (IOException e) {

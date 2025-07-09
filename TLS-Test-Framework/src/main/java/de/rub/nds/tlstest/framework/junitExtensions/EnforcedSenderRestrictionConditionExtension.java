@@ -7,8 +7,8 @@
  */
 package de.rub.nds.tlstest.framework.junitExtensions;
 
+import de.rub.nds.anvilcore.annotation.EnforcedSenderRestriction;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
-import de.rub.nds.tlstest.framework.annotations.EnforcedSenderRestriction;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionContext;

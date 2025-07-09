@@ -44,7 +44,6 @@ public class TestContext implements AnvilListener {
     public TestContext() {
         super();
         this.config = new TlsTestConfig();
-        config.setTestContext(this);
     }
 
     public void setConfigurationOptionsExtension(
@@ -110,7 +109,8 @@ public class TestContext implements AnvilListener {
         // print out test counts before each run
         TestPreparator.printTestInfo(testPlan);
         // run TestPreparator before each run
-        return new TestPreparator(getConfig(), this).prepareTestExecution(testPlan);
+        return new TestPreparator(getConfig(), TestContextRegistry.byTestPlan(testPlan))
+                .prepareTestExecution(testPlan);
     }
 
     @Override

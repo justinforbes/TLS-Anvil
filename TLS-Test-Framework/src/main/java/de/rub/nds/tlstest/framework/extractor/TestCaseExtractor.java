@@ -8,13 +8,13 @@
 package de.rub.nds.tlstest.framework.extractor;
 
 import de.rub.nds.anvilcore.annotation.AnvilTest;
+import de.rub.nds.anvilcore.annotation.EnforcedSenderRestriction;
 import de.rub.nds.anvilcore.annotation.NonCombinatorialAnvilTest;
 import de.rub.nds.anvilcore.constants.TestEndpointType;
 import de.rub.nds.anvilcore.junit.extension.EndpointConditionExtension;
 import de.rub.nds.anvilcore.teststate.reporting.MetadataFetcher;
 import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
-import de.rub.nds.tlstest.framework.annotations.EnforcedSenderRestriction;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;

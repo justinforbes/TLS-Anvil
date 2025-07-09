@@ -30,7 +30,7 @@ public class TestContextRegistry {
      */
     public static TestContext createContext(String testPlanId) {
         TestContext context = new TestContext();
-        CONTEXTS.put(TestRunner.CONTEXT_ID_PROPERTY, context);
+        CONTEXTS.put(testPlanId, context);
         return context;
     }
 
@@ -76,6 +76,26 @@ public class TestContextRegistry {
      */
     public static boolean hasContext(String contextId) {
         return CONTEXTS.containsKey(contextId);
+    }
+
+    /**
+     * Returns the ID of the given TestContext based on identity comparison. This method uses == for
+     * comparison, not equals().
+     *
+     * @param context the TestContext instance to find the ID for
+     * @return the ID of the context, or null if not found in the registry
+     */
+    public static String getContextId(TestContext context) {
+        if (context == null) {
+            return null;
+        }
+
+        for (var entry : CONTEXTS.entrySet()) {
+            if (entry.getValue() == context) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     /**

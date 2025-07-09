@@ -107,12 +107,6 @@ public class Main {
      */
     public static void startTestRunner(TlsTestConfig testConfig) throws JsonProcessingException {
         LOGGER.info("Started in testing mode.");
-
-        // Create a unique context ID for this test run
-        String contextId = "test-context-" + System.currentTimeMillis();
-        TestContext testContext = TestContextRegistry.createContext(contextId);
-        testContext.setConfig(testConfig);
-
         ObjectMapper mapper = new ObjectMapper();
         String additionalConfig = mapper.writeValueAsString(testConfig);
         TestRunner runner =
@@ -120,6 +114,9 @@ public class Main {
                         testConfig.getAnvilTestConfig(),
                         additionalConfig,
                         new TlsParameterIdentifierProvider());
+
+        TestContext testContext = TestContextRegistry.createContext(runner.getContextId());
+        testContext.setConfig(testConfig);
 
         // set TLS-Anvil's TestContext as listener for callbacks
         // in the beforeStart callback, the test preparation is started

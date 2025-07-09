@@ -500,10 +500,7 @@ public class TestPreparator {
      * @return returns true if preparation was successful, false if the test cannot be started
      */
     public boolean prepareTestExecution(TestPlan testPlan) {
-        // The testContext passed to the constructor is already the correct instance from the
-        // registry
-        // No need to retrieve or create it here
-
+        testConfig.setTestContext(testContext);
         if (!testConfig.isParsedArgs()) {
             return false;
         }

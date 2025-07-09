@@ -10,8 +10,11 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
 import de.rub.nds.anvilcore.constants.TestEndpointType;
+import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
@@ -328,8 +331,10 @@ public class ConfigurationOptionsConfig {
 
     private ConfigOptionParameterType derivationTypeFromString(String str)
             throws IllegalArgumentException {
+        AnvilContext anvilContext =
+                AnvilContextRegistry.getContext(TestContextRegistry.getContextId(testContext));
         List<ParameterIdentifier> configOptionIdentifiers =
-                TlsParameterIdentifierProvider.getAllParameterIdentifiers().stream()
+                TlsParameterIdentifierProvider.getAllParameterIdentifiers(anvilContext).stream()
                         .filter(
                                 identifier ->
                                         identifier.getParameterScope()
