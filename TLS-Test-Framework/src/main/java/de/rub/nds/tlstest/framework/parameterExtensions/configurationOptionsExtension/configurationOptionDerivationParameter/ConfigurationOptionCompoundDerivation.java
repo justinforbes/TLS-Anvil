@@ -19,11 +19,11 @@ import de.rub.nds.anvilcore.model.parameter.ParameterType;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
+import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -75,16 +75,21 @@ public class ConfigurationOptionCompoundDerivation
     }
 
     /** Signal end of current test to allow the docker container to go to sleep */
-    public void containerUsageEnded() {
+    public void containerUsageEnded(TestContext testContext) {
         Set<ConfigurationOptionDerivationParameter> configOptionDerivations =
                 new HashSet<>(getSelectedValue());
-        ConfigurationOptionsDerivationManager.getInstance()
-                .getConfigurationOptionsBuildManager()
+        testContext
+                .getConfigurationOptionsExtension()
+                .getConfig()
+                .getBuildManager()
                 .onTestFinished(configOptionDerivations);
     }
 
-    public FeatureExtractionResult getAssociatedFeatureExtractionResult() {
-        return ConfigurationOptionsDerivationManager.getInstance()
+    public FeatureExtractionResult getAssociatedFeatureExtractionResult(TestContext testContext) {
+
+        return testContext
+                .getConfigurationOptionsExtension()
+                .getDerivationManager()
                 .getCompoundFeatureExtractionResult()
                 .get(getSelectedValue());
     }
@@ -159,8 +164,10 @@ public class ConfigurationOptionCompoundDerivation
         // set connection for container in config and ensure container is running
         Set<ConfigurationOptionDerivationParameter> configOptionDerivations =
                 new HashSet<>(getSelectedValue());
-        ConfigurationOptionsDerivationManager.getInstance()
-                .getConfigurationOptionsBuildManager()
+        TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
+                .getConfigurationOptionsExtension()
+                .getConfig()
+                .getBuildManager()
                 .preparePeerConnection(
                         config,
                         TestContextRegistry.byExtensionContext(
@@ -179,7 +186,10 @@ public class ConfigurationOptionCompoundDerivation
                         .map(ParameterIdentifier::getParameterType)
                         .collect(Collectors.toSet());
         for (List<ConfigurationOptionDerivationParameter> setup :
-                ConfigurationOptionsDerivationManager.getInstance().getCompoundSetupList()) {
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
+                        .getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getCompoundSetupList()) {
             List<ConfigurationOptionDerivationParameter> constrainedSetupList =
                     new LinkedList<>(setup);
             // Scope Limitations (Set respective parameters to their default value)

@@ -93,7 +93,7 @@ public abstract class TlsBaseTest extends AnvilTestBaseClass {
                 && parameterCombination.hasParameter(ConfigurationOptionCompoundDerivation.class)) {
             ConfigurationOptionCompoundDerivation compoundParameter =
                     parameterCombination.getParameter(ConfigurationOptionCompoundDerivation.class);
-            compoundParameter.containerUsageEnded();
+            compoundParameter.containerUsageEnded(context);
         }
     }
 

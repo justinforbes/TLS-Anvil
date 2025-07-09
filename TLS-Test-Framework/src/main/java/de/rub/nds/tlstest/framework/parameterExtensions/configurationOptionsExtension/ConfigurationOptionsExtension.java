@@ -30,6 +30,8 @@ public class ConfigurationOptionsExtension {
 
     private ConfigurationOptionsConfig config;
     private final TestContext testContext;
+    private final ConfigurationOptionsDerivationManager derivationManager =
+            new ConfigurationOptionsDerivationManager();
 
     public ConfigurationOptionsExtension(TestContext testContex) {
         this.testContext = testContex;
@@ -66,9 +68,9 @@ public class ConfigurationOptionsExtension {
                 "Testing with configuration options: {}",
                 config.getEnabledConfigOptionDerivations());
 
-        ConfigurationOptionsDerivationManager.getInstance().initializeConfigOptionsConfig(config);
+        derivationManager.initializeConfigOptionsConfig(config);
         config.getBuildManager().init();
-        ConfigurationOptionsDerivationManager.getInstance().preBuildAndValidateAndFilterSetups();
+        derivationManager.preBuildAndValidateAndFilterSetups();
 
         FeatureExtractionResult maxFeatureExtractionResult =
                 config.getBuildManager().getMaximalFeatureExtractionResult();
@@ -77,5 +79,21 @@ public class ConfigurationOptionsExtension {
 
     public void shutdown() {
         config.getBuildManager().onShutdown();
+    }
+
+    public static Logger getLogger() {
+        return LOGGER;
+    }
+
+    public ConfigurationOptionsConfig getConfig() {
+        return config;
+    }
+
+    public TestContext getTestContext() {
+        return testContext;
+    }
+
+    public ConfigurationOptionsDerivationManager getDerivationManager() {
+        return derivationManager;
     }
 }

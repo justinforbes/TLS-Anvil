@@ -54,7 +54,6 @@ import org.apache.logging.log4j.Logger;
  * ConfigurationOptionsBuildManager.
  */
 public class ConfigurationOptionsDerivationManager {
-    private static ConfigurationOptionsDerivationManager instance = null;
     private static final Logger LOGGER = LogManager.getLogger();
     private ConfigurationOptionsConfig config;
     private List<List<ConfigurationOptionDerivationParameter>> compoundSetupList;
@@ -63,15 +62,7 @@ public class ConfigurationOptionsDerivationManager {
 
     private ExecutorService buildExecutor;
 
-    public static synchronized ConfigurationOptionsDerivationManager getInstance() {
-        if (ConfigurationOptionsDerivationManager.instance == null) {
-            ConfigurationOptionsDerivationManager.instance =
-                    new ConfigurationOptionsDerivationManager();
-        }
-        return ConfigurationOptionsDerivationManager.instance;
-    }
-
-    private ConfigurationOptionsDerivationManager() {
+    public ConfigurationOptionsDerivationManager() {
         config = null;
         compoundSetupList = null;
         compoundFeatureExtractionResult = null;

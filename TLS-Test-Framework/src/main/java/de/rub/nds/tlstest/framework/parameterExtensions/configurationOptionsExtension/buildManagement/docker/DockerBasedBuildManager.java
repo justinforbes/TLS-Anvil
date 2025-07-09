@@ -26,7 +26,6 @@ import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.execution.TestPreparator;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.ParallelExecutorWithTimeout;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.TestCOMultiClientDelegate;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.resultsCollector.ConfigOptionsMetadataResultsCollector;
@@ -294,7 +293,10 @@ public class DockerBasedBuildManager {
      */
     protected Set<ConfigurationOptionDerivationParameter> getMaxFeatureOptionSet() {
         List<ConfigOptionParameterType> derivationTypes =
-                ConfigurationOptionsDerivationManager.getInstance().getAllActivatedCOTypes();
+                testContext
+                        .getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getAllActivatedCOTypes();
         Set<ConfigurationOptionDerivationParameter> optionSet = new HashSet<>();
         for (ParameterType type : derivationTypes) {
             ConfigurationOptionDerivationParameter configOptionDerivation =

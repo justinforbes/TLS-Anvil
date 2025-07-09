@@ -18,7 +18,6 @@ import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.config.TlsTestConfig;
 import de.rub.nds.tlstest.framework.extractor.TestCaseExtractor;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -124,7 +123,9 @@ public class Main {
 
         runner.runTests();
         if (!testConfig.getConfigOptionsConfigFile().isEmpty()) {
-            ConfigurationOptionsDerivationManager.getInstance()
+            testContext
+                    .getConfigurationOptionsExtension()
+                    .getDerivationManager()
                     .getConfigurationOptionsBuildManager()
                     .onShutdown();
         }

@@ -18,7 +18,6 @@ import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.EnableCompressionDerivation;
 import de.rub.nds.tlstest.framework.testClasses.Tls12Test;
@@ -42,9 +41,12 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
                     "Compression support could not be evaluated by feature extraction");
         }
         if (!context.getConfig().getConfigOptionsConfigFile().isEmpty()
-                && ConfigurationOptionsDerivationManager.getInstance().getAllActivatedCOTypes()
+                && context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes()
                         != null
-                && ConfigurationOptionsDerivationManager.getInstance()
+                && context.getConfigurationOptionsExtension()
+                        .getDerivationManager()
                         .getAllActivatedCOTypes()
                         .contains(ConfigOptionParameterType.ENABLE_COMPRESSION)) {
             return ConditionEvaluationResult.enabled("");
@@ -72,7 +74,8 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
     public void compressionEnabledByOption(AnvilTestCase testCase, WorkflowRunner runner) {
         Map<List<ConfigurationOptionDerivationParameter>, FeatureExtractionResult>
                 compoundFeatureExtractionResults =
-                        ConfigurationOptionsDerivationManager.getInstance()
+                        context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
                                 .getCompoundFeatureExtractionResult();
         List<List<ConfigurationOptionDerivationParameter>> relevantConfigOptionSets =
                 compoundFeatureExtractionResults.keySet().stream()
