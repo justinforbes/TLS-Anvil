@@ -111,6 +111,7 @@ public class Main {
         LOGGER.info("Started in testing mode.");
         ObjectMapper mapper = new ObjectMapper();
         String additionalConfig = mapper.writeValueAsString(testContext.getConfig());
+
         TestRunner runner =
                 new TestRunner(
                         testContext.getConfig().getAnvilTestConfig(),
