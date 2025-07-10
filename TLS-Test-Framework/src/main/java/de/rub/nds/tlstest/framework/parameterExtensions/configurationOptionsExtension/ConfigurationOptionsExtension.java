@@ -80,7 +80,7 @@ public class ConfigurationOptionsExtension {
     public void shutdown() {
         config.getBuildManager().onShutdown();
     }
-    
+
     public ConfigurationOptionsConfig getConfig() {
         return config;
     }
