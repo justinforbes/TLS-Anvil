@@ -113,6 +113,7 @@ public class HelloRetryRequest extends Tls13Test {
     @AnvilTest(id = "8446-aVxixR6JLE")
     @ExcludeParameter("CIPHER_SUITE")
     @MethodCondition(method = "sendsHelloRetryRequestForEmptyKeyShare")
+    @Tag("npe")
     public void selectsSameCipherSuiteAllAtOnce(AnvilTestCase testCase, WorkflowRunner runner) {
         Config c = getPreparedConfig(runner);
         c.setDefaultClientSupportedCipherSuites(

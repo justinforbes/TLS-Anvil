@@ -132,11 +132,10 @@ public abstract class AbstractScanIT {
     protected abstract void setUpTlsTestConfig(TlsTestConfig tlsConfig);
 
     private TestRunner setUpTestRunner() {
-        testContext.setConfig(tlsConfig);
         ObjectMapper mapper = new ObjectMapper();
         String additionalConfig = "";
         try {
-            additionalConfig = mapper.writeValueAsString(testContext.getConfig());
+            additionalConfig = mapper.writeValueAsString(tlsConfig);
         } catch (JsonProcessingException e) {
             LOGGER.error(String.format("Error while parsing TlsTestConfig: %s", e));
             throw new TestAbortedException();
@@ -147,6 +146,7 @@ public abstract class AbstractScanIT {
         contextId = testRunner.getContextId();
         testContext = TestContextRegistry.createContext(testRunner.getContextId());
         testRunner.setListener(testContext);
+        testContext.setConfig(tlsConfig);
         return testRunner;
     }
 
