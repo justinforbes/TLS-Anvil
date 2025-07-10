@@ -80,11 +80,7 @@ public class ConfigurationOptionsExtension {
     public void shutdown() {
         config.getBuildManager().onShutdown();
     }
-
-    public static Logger getLogger() {
-        return LOGGER;
-    }
-
+    
     public ConfigurationOptionsConfig getConfig() {
         return config;
     }
