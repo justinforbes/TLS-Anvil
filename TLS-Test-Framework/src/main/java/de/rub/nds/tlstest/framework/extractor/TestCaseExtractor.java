@@ -34,6 +34,7 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 
 public class TestCaseExtractor {
     public static final String TEST_EXTRACTOR_CONTEXT_ID = "TestCaseExtractorContext";
+    private final TestContext testContext;
     private static final Logger LOGGER = LogManager.getLogger(TestCaseExtractor.class);
 
     private String packageName;
@@ -41,10 +42,10 @@ public class TestCaseExtractor {
 
     public TestCaseExtractor(String packageName) {
         this.packageName = packageName;
+        this.testContext = TestContextRegistry.createContext(TEST_EXTRACTOR_CONTEXT_ID);
     }
 
     public void start() {
-        TestContext testContext = TestContextRegistry.getContext(TEST_EXTRACTOR_CONTEXT_ID);
         boolean detailedOutput = testContext.getConfig().getTestExtractorDelegate().isDetailed();
 
         fetcher = new MetadataFetcher();
