@@ -62,7 +62,7 @@ public class DockerServerTestContainer extends DockerTestContainer {
                         parallelExecutor,
                         testContext.getConfig().getAnvilTestConfig().getConnectionTimeout(),
                         testContext.getConfig().isUseDTLS(),
-                        false);
+                        true);
         return ServerFeatureExtractionResult.fromServerScanReport(scanner.scan());
     }
 }

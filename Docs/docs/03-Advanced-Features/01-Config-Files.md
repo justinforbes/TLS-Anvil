@@ -13,7 +13,6 @@ Example config file `myConfig.json` for a server scan:
     "profiles" : [ "example_profile" ],
     "profileFolder" : "./profiles",
     "ignoreCache" : false,
-    "parallelTestCases" : 5,
     "parallelTests" : 7,
     "strength" : 2,
     "connectionTimeout" : 200,
@@ -24,7 +23,8 @@ Example config file `myConfig.json` for a server scan:
     "host" : "localhost:8443",
     "doNotSendSNIExtension" : false
   },
-  "exportTraces" : false
+  "exportTraces" : false,
+  "parallelHandshakes" : 5
 }
 ```
 

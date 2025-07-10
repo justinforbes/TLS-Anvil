@@ -115,7 +115,7 @@ public class DockerBasedBuildManager {
 
         ParallelExecutor executor =
                 new ParallelExecutorWithTimeout(
-                        testContext.getConfig().getAnvilTestConfig().getParallelTestCases(),
+                        testContext.getConfig().getParallelHandshakes(),
                         1,
                         600);
         testContext.setStateExecutor(executor);

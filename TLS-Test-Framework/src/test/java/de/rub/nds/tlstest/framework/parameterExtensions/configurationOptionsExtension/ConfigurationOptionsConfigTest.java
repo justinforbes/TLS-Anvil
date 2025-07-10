@@ -75,7 +75,6 @@ public class ConfigurationOptionsConfigTest {
     @Test
     public void testOpenSSLOptionsConfig() {
         AnvilTestConfig testConfig = new AnvilTestConfig();
-        testConfig.setParallelTestCases(1);
         testConfig.setParallelTests(1);
         String contextId =
                 AnvilContextRegistry.createContext(
