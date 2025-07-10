@@ -16,7 +16,7 @@ import de.rub.nds.tlsattacker.core.util.ProviderUtil;
 import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
-import de.rub.nds.tlstest.framework.config.TlsTestConfig;
+import de.rub.nds.tlstest.framework.config.TlsAnvilConfig;
 import de.rub.nds.tlstest.framework.extractor.TestCaseExtractor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +38,7 @@ public class Main {
      * @param args supplied command line arguments
      */
     public static void main(String[] args) {
-        TlsTestConfig testConfig = new TlsTestConfig();
+        TlsAnvilConfig testConfig = new TlsAnvilConfig();
 
         // runs in background, prints the ram usage every 2 seconds, when run in debug mode
         new Thread(
@@ -104,7 +104,7 @@ public class Main {
      *
      * @param testConfig TLS test configuration
      */
-    public static void startTestRunner(TlsTestConfig testConfig) throws JsonProcessingException {
+    public static void startTestRunner(TlsAnvilConfig testConfig) throws JsonProcessingException {
         LOGGER.info("Started in testing mode.");
         ObjectMapper mapper = new ObjectMapper();
         String additionalConfig = mapper.writeValueAsString(testConfig);
@@ -137,7 +137,7 @@ public class Main {
      *
      * @param testConfig TLS test configuration
      */
-    public static void startTestExtractor(TlsTestConfig testConfig) {
+    public static void startTestExtractor(TlsAnvilConfig testConfig) {
         LOGGER.info("Started in extract mode.");
         TestCaseExtractor extractor =
                 new TestCaseExtractor(testConfig.getAnvilTestConfig().getTestPackage());
@@ -150,7 +150,7 @@ public class Main {
      *
      * @param testConfig TLS test configuration
      */
-    public static void startWorkerClient(TlsTestConfig testConfig) {
+    public static void startWorkerClient(TlsAnvilConfig testConfig) {
         LOGGER.info("Started in worker mode.");
 
         // Create a unique context ID for this worker run

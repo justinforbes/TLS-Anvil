@@ -83,11 +83,6 @@ public abstract class TlsBaseTest extends AnvilTestBaseClass {
 
     public TlsBaseTest() {}
 
-    public TlsBaseTest(ExtensionContext extensionContext) {
-        this.extensionContext = extensionContext;
-        this.context = TestContextRegistry.byExtensionContext(extensionContext);
-    }
-
     public TestContext getTestContext() {
         return context;
     }

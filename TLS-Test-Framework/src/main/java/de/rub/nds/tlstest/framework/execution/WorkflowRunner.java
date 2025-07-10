@@ -428,10 +428,11 @@ public class WorkflowRunner {
                 || testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER
                 || preparedConfig.getHighestProtocolVersion() != ProtocolVersion.TLS13
                 || (!testContext
-                        .getFeatureExtractionResult()
+                                .getFeatureExtractionResult()
                                 .getNamedGroups()
                                 .contains(preparedConfig.getDefaultSelectedNamedGroup())
-                        && !testContext.getFeatureExtractionResult()
+                        && !testContext
+                                .getFeatureExtractionResult()
                                 .getTls13Groups()
                                 .contains(preparedConfig.getDefaultSelectedNamedGroup()))
                 || ((ClientFeatureExtractionResult) testContext.getFeatureExtractionResult())

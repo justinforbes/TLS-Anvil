@@ -4,9 +4,7 @@ import de.rub.nds.anvilcore.context.AnvilTestConfig;
 import de.rub.nds.tls.subject.TlsImplementationType;
 import de.rub.nds.tlstest.framework.config.TlsAnvilConfig;
 import de.rub.nds.tlstest.suite.integrationtests.abstracts.AbstractClientScanIT;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled
 public class ClientScan_OpenSSL_1_1_1i_IT extends AbstractClientScanIT {
 
     public ClientScan_OpenSSL_1_1_1i_IT() {
