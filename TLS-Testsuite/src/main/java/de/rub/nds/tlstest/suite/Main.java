@@ -153,20 +153,21 @@ public class Main {
     public static void startWorkerClient(TlsAnvilConfig testConfig) {
         LOGGER.info("Started in worker mode.");
 
-        // Create a unique context ID for this worker run
-        String contextId = "worker-context-" + System.currentTimeMillis();
-        TestContext testContext = TestContextRegistry.createContext(contextId);
-        testContext.setConfig(testConfig);
-
         WorkerClient workerClient =
                 new WorkerClient(
                         testConfig.getWorkerDelegate().getController(),
                         new TlsParameterIdentifierProvider(),
                         testConfig.getWorkerDelegate().getWorkerName());
-        // set the TLS-Anvil TestContext as listener for callbacks
-        // the gotConfig callback is used to set config parameters before a test
-        // the beforeStart callback is used to start the test preparation phase
-        workerClient.setListener(testContext);
+        workerClient.setTestRunnerCallback(
+                testRunner -> {
+                    String id = testRunner.getContextId();
+                    TestContext testContext = TestContextRegistry.createContext(id);
+                    testContext.setConfig(testConfig);
+                    // set the TLS-Anvil TestContext as listener for callbacks
+                    // the gotConfig callback is used to set config parameters before a test
+                    // the beforeStart callback is used to start the test preparation phase
+                    workerClient.setListener(testContext);
+                });
 
         try {
             workerClient.run();
