@@ -256,7 +256,9 @@ public class TlsAnvilConfig extends TLSDelegateConfig {
                             Paths.get(
                                             System.getProperty("user.dir"),
                                             "Results_"
-                                                    + getAnvilTestConfig().getIdentifier()
+                                                    + getAnvilTestConfig()
+                                                            .getIdentifier()
+                                                            .replaceAll("[^a-zA-Z0-9._-]", "_")
                                                     + "_"
                                                     + Utils.DateToISO8601UTC(new Date()))
                                     .toString());
