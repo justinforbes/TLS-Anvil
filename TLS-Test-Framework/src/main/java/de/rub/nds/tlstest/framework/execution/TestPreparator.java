@@ -36,7 +36,6 @@ import de.rub.nds.tlstest.framework.ClientFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.ServerFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
-import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.config.TlsAnvilConfig;
 import de.rub.nds.tlstest.framework.config.delegates.TestClientDelegate;
 import de.rub.nds.tlstest.framework.config.delegates.TestServerDelegate;
@@ -723,9 +722,8 @@ public class TestPreparator {
      *
      * @param testPlan the testPlan, supplied by JUnits discovery
      */
-    public static void printTestInfo(TestPlan testPlan) {
+    public void printTestInfo(TestPlan testPlan) {
         LOGGER.info("Scheduled test templates:");
-        TestContext testContext = TestContextRegistry.byTestPlan(testPlan);
         TestEndpointType executionEndpointType = testContext.getConfig().getTestEndpointMode();
         if (testContext.getConfig().isUseDTLS()) {
             long clientDtls12 =

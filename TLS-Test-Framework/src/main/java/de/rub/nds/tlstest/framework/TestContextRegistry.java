@@ -10,7 +10,6 @@ package de.rub.nds.tlstest.framework;
 import de.rub.nds.anvilcore.execution.TestRunner;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.platform.launcher.TestPlan;
 
 /**
  * Registry for managing multiple TestContext instances identified by unique IDs. This replaces the
@@ -99,26 +98,6 @@ public class TestContextRegistry {
     }
 
     /**
-     * Retrieves a TestContext by extracting the context ID from the JUnit TestPlan. This is a
-     * convenience method for JUnit TestExecutionListener methods that need to access their specific
-     * context.
-     *
-     * @param testPlan the JUnit TestPlan
-     * @return the TestContext instance for the context ID found in the test plan, or null if not
-     *     found
-     */
-    public static TestContext byTestPlan(TestPlan testPlan) {
-        String contextId =
-                testPlan.getConfigurationParameters()
-                        .get(TestRunner.CONTEXT_ID_PROPERTY)
-                        .orElse(null);
-        if (contextId == null) {
-            return null;
-        }
-        return getContext(contextId);
-    }
-
-    /**
      * Retrieves a TestContext by extracting the context ID from the JUnit ExtensionContext. This is
      * a convenience method for JUnit tests that need to access their specific context.
      *
@@ -141,15 +120,8 @@ public class TestContextRegistry {
      * @return the context ID, or null if not found
      */
     private static String getContextIdFromExtensionContext(ExtensionContext extensionContext) {
-        ExtensionContext current = extensionContext;
-        while (current != null) {
-            String contextId =
-                    current.getConfigurationParameter(TestRunner.CONTEXT_ID_PROPERTY).orElse(null);
-            if (contextId != null) {
-                return contextId;
-            }
-            current = current.getParent().orElse(null);
-        }
-        return null;
+        return extensionContext
+                .getConfigurationParameter(TestRunner.CONTEXT_ID_PROPERTY)
+                .orElse(null);
     }
 }

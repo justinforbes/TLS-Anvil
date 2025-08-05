@@ -101,11 +101,13 @@ public class TestContext implements AnvilListener {
 
     @Override
     public boolean beforeStart(TestPlan testPlan, long totalTests) {
+        TestPreparator testPreparator = new TestPreparator(getConfig(), this);
+
         // print out test counts before each run
-        TestPreparator.printTestInfo(testPlan);
+        testPreparator.printTestInfo(testPlan);
+
         // run TestPreparator before each run
-        return new TestPreparator(getConfig(), TestContextRegistry.byTestPlan(testPlan))
-                .prepareTestExecution(testPlan);
+        return testPreparator.prepareTestExecution(testPlan);
     }
 
     @Override
