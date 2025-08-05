@@ -15,6 +15,7 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.PskKeyExchangeMode;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterCombination;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
 import de.rub.nds.tlstest.framework.junitExtensions.EnforcedSenderRestrictionConditionExtension;
@@ -49,6 +50,7 @@ public abstract class TlsBaseTest extends AnvilTestBaseClass {
     @BeforeEach
     public void setExtensionContext(ExtensionContext extensionContext) {
         this.extensionContext = extensionContext;
+        context = TestContextRegistry.byExtensionContext(extensionContext);
     }
 
     public Config getPreparedConfig(WorkflowRunner runner) {
@@ -79,13 +81,7 @@ public abstract class TlsBaseTest extends AnvilTestBaseClass {
         }
     }
 
-    public TlsBaseTest() {
-        this.context = TestContext.getInstance();
-    }
-
-    public void setTestContext(TestContext testCotext) {
-        this.context = testCotext;
-    }
+    public TlsBaseTest() {}
 
     public TestContext getTestContext() {
         return context;
@@ -97,7 +93,7 @@ public abstract class TlsBaseTest extends AnvilTestBaseClass {
                 && parameterCombination.hasParameter(ConfigurationOptionCompoundDerivation.class)) {
             ConfigurationOptionCompoundDerivation compoundParameter =
                     parameterCombination.getParameter(ConfigurationOptionCompoundDerivation.class);
-            compoundParameter.containerUsageEnded();
+            compoundParameter.containerUsageEnded(context);
         }
     }
 

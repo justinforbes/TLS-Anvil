@@ -88,7 +88,7 @@ public class ServerKeyExchange extends Tls12Test {
         List<DerivationParameter> parameterValues = new LinkedList<>();
         CertificateDerivation certificateDerivation = new CertificateDerivation();
         List<DerivationParameter<Config, CertificateConfigChainValue>> certChains =
-                certificateDerivation.getApplicableCertificateConfigs(context, scope, true);
+                certificateDerivation.getApplicableCertificateConfigs(scope, true);
         for (DerivationParameter<Config, CertificateConfigChainValue> certChain : certChains) {
             X509CertificateConfig leafConfig =
                     certChain.getSelectedValue().get(X509CertificateChainProvider.LEAF_CERT_INDEX);
@@ -143,7 +143,7 @@ public class ServerKeyExchange extends Tls12Test {
                 (CertificateDerivation)
                         TlsParameterType.CERTIFICATE.getInstance(ParameterScope.NO_SCOPE);
         List<DerivationParameter<Config, CertificateConfigChainValue>> parameterList =
-                certDerivation.getApplicableCertificateConfigs(context, scope, true);
+                certDerivation.getApplicableCertificateConfigs(scope, true);
         return parameterList;
     }
 

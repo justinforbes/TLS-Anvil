@@ -16,6 +16,7 @@ import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.ClientFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.ServerFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.constants.KeyExchangeType;
 import de.rub.nds.tlstest.framework.constants.KeyX;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -79,20 +80,21 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
     private static List<ParameterType> getDerivationsOfModel(
             DerivationScope derivationScope, String baseModel) {
         LinkedList<ParameterType> derivationsOfModel = new LinkedList<>();
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         switch (baseModel) {
             case DefaultModelTypes.EMPTY:
                 break;
             case LENGTHFIELD:
             case CERTIFICATE:
-                if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                        == TestEndpointType.CLIENT) {
+                if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
                     derivationsOfModel.add(TlsParameterType.CERTIFICATE);
                     derivationsOfModel.add(TlsParameterType.SIG_HASH_ALGORIHTM);
                 }
             case GENERIC:
             default:
                 derivationsOfModel.addAll(getBasicModelDerivations(derivationScope));
-                if (!TestContext.getInstance().getConfig().getConfigOptionsConfigFile().isEmpty()) {
+                if (!testContext.getConfig().getConfigOptionsConfigFile().isEmpty()) {
                     derivationsOfModel.add(
                             ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER);
                 }
@@ -103,9 +105,10 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
     private static List<TlsParameterType> getBasicModelDerivations(
             DerivationScope derivationScope) {
         List<TlsParameterType> derivationTypes = getBasicDerivationsForBoth(derivationScope);
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
 
-        if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                == TestEndpointType.SERVER) {
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
             derivationTypes.addAll(getBasicDerivationsForServer(derivationScope));
         } else {
             derivationTypes.addAll(getBasicDerivationsForClient(derivationScope));
@@ -115,11 +118,13 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
 
     private static List<TlsParameterType> getBasicDerivationsForBoth(
             DerivationScope derivationScope) {
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         List<TlsParameterType> derivationTypes = new LinkedList<>();
         derivationTypes.add(TlsParameterType.CIPHER_SUITE);
         derivationTypes.add(TlsParameterType.NAMED_GROUP);
         derivationTypes.add(TlsParameterType.RECORD_LENGTH);
-        if (!TestContext.getInstance().getConfig().isUseDTLS()) {
+        if (!testContext.getConfig().isUseDTLS()) {
             derivationTypes.add(TlsParameterType.TCP_FRAGMENTATION);
         }
 
@@ -133,9 +138,10 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
     private static List<TlsParameterType> getBasicDerivationsForServer(
             DerivationScope derivationScope) {
         List<TlsParameterType> derivationTypes = new LinkedList<>();
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         Set<ExtensionType> supportedExtensions =
-                ((ServerFeatureExtractionResult)
-                                TestContext.getInstance().getFeatureExtractionResult())
+                ((ServerFeatureExtractionResult) testContext.getFeatureExtractionResult())
                         .getNegotiableExtensions();
         if (supportedExtensions != null) {
             // we add all extensions regardless if the server negotiates them
@@ -158,21 +164,21 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
             }
         }
 
-        if (TestContext.getInstance()
+        if (testContext
                         .getFeatureExtractionResult()
                         .getResult(TlsAnalyzedProperty.HAS_GREASE_CIPHER_SUITE_INTOLERANCE)
                 != TestResults.TRUE) {
             derivationTypes.add(TlsParameterType.INCLUDE_GREASE_CIPHER_SUITES);
         }
 
-        if (TestContext.getInstance()
+        if (testContext
                         .getFeatureExtractionResult()
                         .getResult(TlsAnalyzedProperty.HAS_GREASE_NAMED_GROUP_INTOLERANCE)
                 != TestResults.TRUE) {
             derivationTypes.add(TlsParameterType.INCLUDE_GREASE_NAMED_GROUPS);
         }
 
-        if (TestContext.getInstance()
+        if (testContext
                         .getFeatureExtractionResult()
                         .getResult(
                                 TlsAnalyzedProperty
@@ -186,9 +192,10 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
     private static List<TlsParameterType> getBasicDerivationsForClient(
             DerivationScope derivationScope) {
         List<TlsParameterType> derivationTypes = new LinkedList<>();
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         ClientFeatureExtractionResult extractionResult =
-                (ClientFeatureExtractionResult)
-                        TestContext.getInstance().getFeatureExtractionResult();
+                (ClientFeatureExtractionResult) testContext.getFeatureExtractionResult();
         if (!isTls13Test(derivationScope)) {
 
             if (extractionResult
@@ -203,7 +210,7 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
                 derivationTypes.add(TlsParameterType.INCLUDE_EXTENDED_MASTER_SECRET_EXTENSION);
             }
         }
-        if (TestContext.getInstance().getConfig().isUseDTLS()) {
+        if (testContext.getConfig().isUseDTLS()) {
             derivationTypes.add(TlsParameterType.COOKIE_EXCHANGE);
         }
         return derivationTypes;

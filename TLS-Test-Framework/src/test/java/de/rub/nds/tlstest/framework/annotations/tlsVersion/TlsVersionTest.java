@@ -14,7 +14,7 @@ public class TlsVersionTest {
 
     @BeforeAll
     static void setup() {
-        TestContext testContext = TestContext.getInstance();
+        TestContext testContext = new TestContext();
         ServerFeatureExtractionResult extractionResult =
                 new ServerFeatureExtractionResult("", 4433);
 

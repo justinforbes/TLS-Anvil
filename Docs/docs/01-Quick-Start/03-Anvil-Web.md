@@ -26,6 +26,7 @@ Once started, the application should be available at [http://localhost:5001](htt
 
 :::info
 
+
 For a more detailed overview of Anvil-Web’s features, see [Result Analysis](../Result-Analysis).  
 Below is a brief description of the core concepts.
 

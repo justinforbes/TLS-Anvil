@@ -15,6 +15,8 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.AlgorithmResolver;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.CipherType;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -89,6 +91,8 @@ public class AppMsgLengthDerivation extends TlsDerivationParameter<Integer> {
     public List<DerivationParameter<Config, Integer>> getParameterValues(
             DerivationScope derivationScope) {
         int maxCipherTextByteLen = 0;
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         Set<CipherSuite> cipherSuiteList = context.getFeatureExtractionResult().getCipherSuites();
         if (TlsParameterIdentifierProvider.isTls13Test(derivationScope)) {
             cipherSuiteList = context.getFeatureExtractionResult().getSupportedTls13CipherSuites();

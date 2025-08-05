@@ -21,7 +21,6 @@ import de.rub.nds.tlsattacker.core.state.State;
 import de.rub.nds.tlsattacker.core.workflow.WorkflowTrace;
 import de.rub.nds.tlsattacker.core.workflow.WorkflowTraceConfigurationUtil;
 import de.rub.nds.tlsattacker.core.workflow.factory.WorkflowTraceType;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.Validator;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
 import org.junit.jupiter.api.Tag;
@@ -66,8 +65,7 @@ public class TlsLengthfieldTest extends TlsBaseTest {
     }
 
     public boolean isClientTest() {
-        if (TestContext.getInstance().getConfig().getTestEndpointMode()
-                == TestEndpointType.CLIENT) {
+        if (context.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             return true;
         }
         return false;

@@ -8,10 +8,10 @@
 package de.rub.nds.tlstest.framework.annotations.tlsVersion;
 
 import de.rub.nds.anvilcore.annotation.AnvilTest;
-import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.context.AnvilTestConfig;
 import de.rub.nds.tlsattacker.core.constants.ProtocolVersion;
-import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.annotations.TlsVersion;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,9 +22,10 @@ public class TlsVersionAnnotationClass extends TlsVersionTest {
 
     @BeforeAll
     static void setup() {
-        AnvilContext.createInstance(
-                new AnvilTestConfig(), "", new TlsParameterIdentifierProvider());
-        TestContext testContext = TestContext.getInstance();
+        String contextId =
+                AnvilContextRegistry.createContext(
+                        new AnvilTestConfig(), "", new TlsParameterIdentifierProvider());
+        TestContextRegistry.createContext(contextId);
     }
 
     @AnvilTest

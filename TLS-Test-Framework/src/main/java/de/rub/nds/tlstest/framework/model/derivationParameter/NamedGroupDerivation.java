@@ -15,6 +15,8 @@ import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.NamedGroup;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.constants.KeyExchangeType;
@@ -37,7 +39,8 @@ public class NamedGroupDerivation extends TlsDerivationParameter<NamedGroup> {
     @Override
     public List<DerivationParameter<Config, NamedGroup>> getParameterValues(
             DerivationScope derivationScope) {
-
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         List<DerivationParameter<Config, NamedGroup>> parameterValues = new LinkedList<>();
         List<NamedGroup> groupList = context.getFeatureExtractionResult().getTls13Groups();
         if (!TlsParameterIdentifierProvider.isTls13Test(derivationScope)
@@ -60,6 +63,8 @@ public class NamedGroupDerivation extends TlsDerivationParameter<NamedGroup> {
 
     @Override
     public void applyToConfig(Config config, DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         if (getSelectedValue() != null) {
             if (context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
                 config.setDefaultClientNamedGroups(getSelectedValue());
@@ -76,6 +81,8 @@ public class NamedGroupDerivation extends TlsDerivationParameter<NamedGroup> {
 
     @Override
     public void postProcessConfig(Config config, DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         if (getSelectedValue() != null
                 && context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
 

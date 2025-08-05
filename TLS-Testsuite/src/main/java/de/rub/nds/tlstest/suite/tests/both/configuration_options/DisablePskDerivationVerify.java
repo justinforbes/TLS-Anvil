@@ -15,7 +15,6 @@ import de.rub.nds.scanner.core.probe.result.TestResults;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.DisablePskDerivation;
 import de.rub.nds.tlstest.framework.testClasses.Tls12Test;
@@ -33,9 +32,12 @@ public class DisablePskDerivationVerify extends Tls12Test {
 
     public ConditionEvaluationResult disablePskOptionTested() {
         if (!context.getConfig().getConfigOptionsConfigFile().isEmpty()
-                && ConfigurationOptionsDerivationManager.getInstance().getAllActivatedCOTypes()
+                && context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes()
                         != null
-                && ConfigurationOptionsDerivationManager.getInstance()
+                && context.getConfigurationOptionsExtension()
+                        .getDerivationManager()
                         .getAllActivatedCOTypes()
                         .contains(ConfigOptionParameterType.DISABLE_PSK)) {
             return ConditionEvaluationResult.enabled("");
@@ -61,7 +63,8 @@ public class DisablePskDerivationVerify extends Tls12Test {
     public void pskCiphersuitesDisabled() {
         Map<List<ConfigurationOptionDerivationParameter>, FeatureExtractionResult>
                 compoundFeatureExtractionResults =
-                        ConfigurationOptionsDerivationManager.getInstance()
+                        context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
                                 .getCompoundFeatureExtractionResult();
         List<List<ConfigurationOptionDerivationParameter>> relevantConfigOptionSets =
                 compoundFeatureExtractionResults.keySet().stream()

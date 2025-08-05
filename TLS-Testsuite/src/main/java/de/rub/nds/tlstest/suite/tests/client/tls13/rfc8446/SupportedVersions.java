@@ -28,7 +28,6 @@ import de.rub.nds.tlsattacker.core.workflow.WorkflowTraceConfigurationUtil;
 import de.rub.nds.tlsattacker.core.workflow.action.ReceiveAction;
 import de.rub.nds.tlsattacker.core.workflow.action.SendAction;
 import de.rub.nds.tlsattacker.core.workflow.factory.WorkflowTraceType;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.Validator;
 import de.rub.nds.tlstest.framework.annotations.KeyExchange;
 import de.rub.nds.tlstest.framework.constants.KeyExchangeType;
@@ -141,8 +140,7 @@ public class SupportedVersions extends Tls13Test {
 
     public List<DerivationParameter> getUnsupportedProtocolVersions(DerivationScope scope) {
         SupportedVersionsExtensionMessage clientSupportedVersions =
-                TestContext.getInstance()
-                        .getReceivedClientHelloMessage()
+                context.getReceivedClientHelloMessage()
                         .getExtension(SupportedVersionsExtensionMessage.class);
         List<DerivationParameter> parameterValues = new LinkedList<>();
         if (clientSupportedVersions != null) {

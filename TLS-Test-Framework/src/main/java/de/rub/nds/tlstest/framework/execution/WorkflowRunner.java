@@ -47,6 +47,7 @@ import de.rub.nds.tlsattacker.transport.udp.ServerUdpTransportHandler;
 import de.rub.nds.tlsattacker.transport.udp.UdpTransportHandler;
 import de.rub.nds.tlstest.framework.ClientFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterCombination;
 import java.io.IOException;
 import java.util.Date;
@@ -65,7 +66,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 public class WorkflowRunner {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private TestContext context = null;
+    private TestContext testContext = null;
     private ExtensionContext extensionContext = null;
 
     private Config preparedConfig;
@@ -84,13 +85,14 @@ public class WorkflowRunner {
     private static Map<ExtensionContext, WorkflowRunner> workflowRunners = new HashMap<>();
 
     public WorkflowRunner(ExtensionContext extensionContext) {
-        this.context = TestContext.getInstance();
+        this.testContext = TestContextRegistry.byExtensionContext(extensionContext);
         this.extensionContext = extensionContext;
         WorkflowRunner.workflowRunners.put(extensionContext, this);
     }
 
     public WorkflowRunner(ExtensionContext extensionContext, Config config) {
         this(extensionContext);
+        this.testContext = TestContextRegistry.byExtensionContext(extensionContext);
         this.preparedConfig = config;
     }
 
@@ -103,7 +105,7 @@ public class WorkflowRunner {
      */
     public State execute(WorkflowTrace trace, Config config) {
         // don't run if testRun is already aborted
-        if (context.isAborted()) {
+        if (testContext.isAborted()) {
             state = new State();
             return state;
         }
@@ -118,14 +120,14 @@ public class WorkflowRunner {
         adaptWorkflowTrace(trace, config);
         state = new State(config, trace);
         StateExecutionTask task =
-                new StateExecutionTask(state, context.getStateExecutor().getReexecutions());
-        if (context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
+                new StateExecutionTask(state, testContext.getStateExecutor().getReexecutions());
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
             prepareServerTask(task);
         } else {
             prepareClientTask(task);
         }
         task.setAfterExecutionCallback(this::afterExecutionCallback);
-        context.getStateExecutor().bulkExecuteTasks(task);
+        testContext.getStateExecutor().bulkExecuteTasks(task);
         postExecution();
         return state;
     }
@@ -191,7 +193,7 @@ public class WorkflowRunner {
         }
 
         if (shouldAdaptForDtls(trace, config)) {
-            adaptForDtls(trace, config, context.getConfig().getTestEndpointMode());
+            adaptForDtls(trace, config, testContext.getConfig().getTestEndpointMode());
         }
 
         if (shouldInsertHelloRetryRequest()) {
@@ -203,10 +205,10 @@ public class WorkflowRunner {
         }
 
         if (preparedConfig.getHighestProtocolVersion() == ProtocolVersion.TLS13
-                && context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
+                && testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
             allowOptionalTls13NewSessionTickets(trace);
         } else if (preparedConfig.getHighestProtocolVersion() == ProtocolVersion.TLS13
-                && context.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
+                && testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             allowOptionalClientCcs(trace);
         }
 
@@ -214,32 +216,26 @@ public class WorkflowRunner {
     }
 
     public void prepareServerTask(StateExecutionTask task) {
-        TestContext.getInstance().increaseServerHandshakesSinceRestart();
-        if (TestContext.getInstance().getServerHandshakesSinceRestart()
-                        == TestContext.getInstance()
-                                .getConfig()
-                                .getAnvilTestConfig()
-                                .getRestartServerAfter()
-                && TestContext.getInstance().getConfig().getTimeoutActionScript() != null) {
+        testContext.increaseServerHandshakesSinceRestart();
+        if (testContext.getServerHandshakesSinceRestart()
+                        == testContext.getConfig().getAnvilTestConfig().getRestartServerAfter()
+                && testContext.getConfig().getTimeoutActionScript() != null) {
             LOGGER.info("Scheduling server restart with task");
             task.setBeforeTransportPreInitCallback(
                     (State state) -> {
                         try {
-                            return TestContext.getInstance()
-                                    .getConfig()
-                                    .getTimeoutActionScript()
-                                    .call();
+                            return testContext.getConfig().getTimeoutActionScript().call();
                         } catch (Exception ex) {
                             LOGGER.error(ex);
                             return 1;
                         }
                     });
-            TestContext.getInstance().resetServerHandshakesSinceRestart();
+            testContext.resetServerHandshakesSinceRestart();
         }
     }
 
     public void prepareClientTask(StateExecutionTask task) throws RuntimeException {
-        if (context.getConfig().isUseDTLS()) {
+        if (testContext.getConfig().isUseDTLS()) {
             // TODO: Close UDP socket if still open before reexecution
             // task.setBeforeReexecutionCallback(this::reexecutionCallback);
         }
@@ -273,7 +269,8 @@ public class WorkflowRunner {
      * @return empty WorkflowTrace
      */
     public WorkflowTrace generateWorkflowTrace(WorkflowTraceType type) {
-        RunningModeType runningMode = resolveRunningMode(context.getConfig().getTestEndpointMode());
+        RunningModeType runningMode =
+                resolveRunningMode(testContext.getConfig().getTestEndpointMode());
         WorkflowTrace trace =
                 new WorkflowConfigurationFactory(preparedConfig)
                         .createWorkflowTrace(type, runningMode);
@@ -428,15 +425,17 @@ public class WorkflowRunner {
 
     public boolean shouldInsertHelloRetryRequest() {
         if (!autoHelloRetryRequest
-                || context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER
+                || testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER
                 || preparedConfig.getHighestProtocolVersion() != ProtocolVersion.TLS13
-                || (!context.getFeatureExtractionResult()
+                || (!testContext
+                                .getFeatureExtractionResult()
                                 .getNamedGroups()
                                 .contains(preparedConfig.getDefaultSelectedNamedGroup())
-                        && !context.getFeatureExtractionResult()
+                        && !testContext
+                                .getFeatureExtractionResult()
                                 .getTls13Groups()
                                 .contains(preparedConfig.getDefaultSelectedNamedGroup()))
-                || ((ClientFeatureExtractionResult) context.getFeatureExtractionResult())
+                || ((ClientFeatureExtractionResult) testContext.getFeatureExtractionResult())
                         .getClientHelloKeyShareGroups()
                         .contains(preparedConfig.getDefaultSelectedNamedGroup())) {
             return false;
@@ -579,7 +578,7 @@ public class WorkflowRunner {
     }
 
     private boolean shouldInsertNewSessionTicket() {
-        if (context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.SERVER
                 && preparedConfig.getHighestProtocolVersion() == ProtocolVersion.TLS12
                 && preparedConfig.isAddSessionTicketTLSExtension()) {
             return true;
@@ -688,7 +687,7 @@ public class WorkflowRunner {
     }
 
     public void allowOptionalClientApplicationMessage(WorkflowTrace trace) {
-        if (context.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             boolean mayReceiveApplicationDataFromNow = false;
             for (TlsAction action : trace.getTlsActions()) {
                 if (action instanceof ReceiveAction) {

@@ -30,7 +30,6 @@ import de.rub.nds.tlsattacker.core.workflow.action.SendAction;
 import de.rub.nds.tlsattacker.core.workflow.factory.WorkflowConfigurationFactory;
 import de.rub.nds.tlsattacker.core.workflow.factory.WorkflowTraceType;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.Validator;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
 import de.rub.nds.tlstest.framework.testClasses.Tls12Test;
@@ -202,9 +201,7 @@ public class StateMachine extends Tls12Test {
     }
 
     public ConditionEvaluationResult onlySupportsTls12() {
-        if (TestContext.getInstance()
-                        .getFeatureExtractionResult()
-                        .getResult(TlsAnalyzedProperty.SUPPORTS_TLS_1_3)
+        if (context.getFeatureExtractionResult().getResult(TlsAnalyzedProperty.SUPPORTS_TLS_1_3)
                 == TestResults.FALSE) {
             return ConditionEvaluationResult.enabled("Server does not support TLS 1.3");
         }

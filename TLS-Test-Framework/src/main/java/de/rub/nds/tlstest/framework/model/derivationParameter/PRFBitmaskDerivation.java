@@ -15,6 +15,8 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.AlgorithmResolver;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.HandshakeByteLength;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -42,6 +44,7 @@ public class PRFBitmaskDerivation extends TlsDerivationParameter<Integer> {
     @Override
     public List getParameterValues(DerivationScope scope) {
         List<DerivationParameter<Config, Integer>> parameterValues = new LinkedList<>();
+        TestContext context = TestContextRegistry.byExtensionContext(scope.getExtensionContext());
         if (TlsParameterIdentifierProvider.isTls13Test(scope)) {
             int maxHkdfSize = 0;
             for (CipherSuite cipherSuite :

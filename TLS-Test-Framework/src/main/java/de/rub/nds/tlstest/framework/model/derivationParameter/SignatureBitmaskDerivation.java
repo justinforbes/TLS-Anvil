@@ -17,6 +17,7 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.NamedGroup;
 import de.rub.nds.tlsattacker.core.constants.SignatureAndHashAlgorithm;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.helper.CertificateConfigChainValue;
@@ -46,6 +47,8 @@ public class SignatureBitmaskDerivation extends TlsDerivationParameter<Integer> 
     @Override
     public List<DerivationParameter<Config, Integer>> getParameterValues(
             DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         return getFirstAndLastByteOfEachSignature(context, derivationScope);
     }
 
@@ -107,7 +110,7 @@ public class SignatureBitmaskDerivation extends TlsDerivationParameter<Integer> 
         int maxSignatureLength = 0;
         for (SignatureAndHashAlgorithm signatureHashAlgorithm : signatureAndHashAlgorithms) {
             int estimatedMaxSignatureLength =
-                    computeEstimatedMaxSignatureSize(signatureHashAlgorithm);
+                    computeEstimatedMaxSignatureSize(signatureHashAlgorithm, context);
             if (estimatedMaxSignatureLength > maxSignatureLength) {
                 maxSignatureLength = estimatedMaxSignatureLength;
             }
@@ -158,8 +161,7 @@ public class SignatureBitmaskDerivation extends TlsDerivationParameter<Integer> 
         return pkSize;
     }
 
-    private static int getMaxNamedGroupSize() {
-        TestContext context = TestContext.getInstance();
+    private static int getMaxNamedGroupSize(TestContext context) {
         List<NamedGroup> supportedNamedGroups =
                 context.getFeatureExtractionResult().getNamedGroups().stream()
                         .filter(group -> NamedGroup.getImplemented().contains(group))
@@ -181,13 +183,13 @@ public class SignatureBitmaskDerivation extends TlsDerivationParameter<Integer> 
     public void applyToConfig(Config config, DerivationScope derivationScope) {}
 
     public static int computeEstimatedMaxSignatureSize(
-            SignatureAndHashAlgorithm signatureHashAlgorithm) {
+            SignatureAndHashAlgorithm signatureHashAlgorithm, TestContext context) {
         SignatureAlgorithm signatureAlgorithm = signatureHashAlgorithm.getSignatureAlgorithm();
         if (signatureAlgorithm.name().contains("RSA")) {
             return computeEstimatedSignatureSize(
                     signatureAlgorithm, getMaxPublicKeySizeForType(X509PublicKeyType.RSA));
         } else if (signatureAlgorithm == SignatureAlgorithm.ECDSA) {
-            return computeEstimatedSignatureSize(signatureAlgorithm, getMaxNamedGroupSize());
+            return computeEstimatedSignatureSize(signatureAlgorithm, getMaxNamedGroupSize(context));
         } else if (signatureAlgorithm == SignatureAlgorithm.DSA) {
             return computeEstimatedSignatureSize(
                     signatureAlgorithm, getMaxPublicKeySizeForType(X509PublicKeyType.DSA));
