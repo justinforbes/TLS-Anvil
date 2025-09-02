@@ -52,14 +52,13 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
             parameterValues.add(
                     new CommonBuildParameterDerivation(
                             new ConfigurationOptionValue(
-                                    true,
-                                    ((FlagTranslation) translation).setIsRichestConfiguration()),
+                                    true, ((FlagTranslation) translation).isRichestConfiguration()),
                             getParameterIdentifier().getParameterScope()));
             parameterValues.add(
                     new CommonBuildParameterDerivation(
                             new ConfigurationOptionValue(
                                     false,
-                                    !((FlagTranslation) translation).setIsRichestConfiguration()),
+                                    !((FlagTranslation) translation).isRichestConfiguration()),
                             getParameterIdentifier().getParameterScope()));
         } else if (translation instanceof SingleValueOptionTranslation) {
             SingleValueOptionTranslation singleValueOptionTranslation =
