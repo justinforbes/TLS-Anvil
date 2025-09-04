@@ -16,6 +16,8 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.AlgorithmResolver;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.ProtocolVersion;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
@@ -39,6 +41,8 @@ public class MacBitmaskDerivation extends TlsDerivationParameter<Integer> {
     public List<DerivationParameter<Config, Integer>> getParameterValues(
             DerivationScope derivationScope) {
         List<DerivationParameter<Config, Integer>> parameterValues = new LinkedList<>();
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         int maxMacLength = 0;
         for (CipherSuite cipherSuite : context.getFeatureExtractionResult().getCipherSuites()) {
             // we always resolve the MAC using TLS 1.2, as the protocol version is only required to

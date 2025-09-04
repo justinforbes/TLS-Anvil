@@ -25,7 +25,6 @@ import de.rub.nds.tls.subject.docker.DockerTlsManagerFactory.TlsInstanceBuilder;
 import de.rub.nds.tls.subject.docker.DockerTlsManagerFactory.TlsServerInstanceBuilder;
 import de.rub.nds.tls.subject.docker.build.DockerBuilder;
 import de.rub.nds.tls.subject.exceptions.CertVolumeNotFoundException;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import java.util.*;
 import java.util.function.Predicate;
@@ -150,7 +149,7 @@ public class DockerFactory {
 
         String containerName = String.format("%s_client_%s", containerNamePrefix, dockerTag);
         TransportType clientTransportType;
-        if (TestContext.getInstance().getConfig().isUseDTLS()) {
+        if (configOptionsConfig.getTestContext().getConfig().isUseDTLS()) {
             clientTransportType = TransportType.UDP;
         } else {
             clientTransportType = TransportType.TCP;
@@ -171,7 +170,8 @@ public class DockerFactory {
                 dockerManagerHost,
                 dockerManagerPort,
                 configOptionsConfig.getDockerClientDestinationHostName(),
-                tlsServerPort);
+                tlsServerPort,
+                configOptionsConfig.getTestContext());
     }
 
     /**
@@ -212,7 +212,7 @@ public class DockerFactory {
                                 configOptionsConfig.getDockerHostBinding(), dockerManagerPort),
                         exposedManagerPort));
         TransportType serverTransportType;
-        if (TestContext.getInstance().getConfig().isUseDTLS()) {
+        if (configOptionsConfig.getTestContext().getConfig().isUseDTLS()) {
             serverTransportType = TransportType.UDP;
         } else {
             serverTransportType = TransportType.TCP;
@@ -233,7 +233,8 @@ public class DockerFactory {
                 dockerContainerId,
                 dockerHost,
                 dockerManagerPort,
-                dockerTlsPort);
+                dockerTlsPort,
+                configOptionsConfig.getTestContext());
     }
 
     /**

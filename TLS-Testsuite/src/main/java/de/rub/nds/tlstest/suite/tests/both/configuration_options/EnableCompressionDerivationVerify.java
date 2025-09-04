@@ -42,12 +42,15 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
                     "Compression support could not be evaluated by feature extraction");
         }
         if (!context.getConfig().getConfigOptionsConfigFile().isEmpty()
-                && ConfigurationOptionsDerivationManager.getInstance().getAllActivatedCOTypes()
+                && context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes()
                         != null
                 && CommonBuildParameterDerivation.isOptionListed(
                         "ENABLE_COMPRESSION",
-                        ConfigurationOptionsDerivationManager.getInstance()
-                                .getAllActivatedCOTypes())) {
+                        context.getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getAllActivatedCOTypes())) {
             return ConditionEvaluationResult.enabled("");
         } else {
             return ConditionEvaluationResult.disabled(
@@ -81,7 +84,8 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
     public void compressionEnabledByOption(AnvilTestCase testCase, WorkflowRunner runner) {
         Map<List<ConfigurationOptionDerivationParameter>, FeatureExtractionResult>
                 compoundFeatureExtractionResults =
-                        ConfigurationOptionsDerivationManager.getInstance()
+                        context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
                                 .getCompoundFeatureExtractionResult();
         List<List<ConfigurationOptionDerivationParameter>> relevantConfigOptionSets =
                 compoundFeatureExtractionResults.keySet().stream()

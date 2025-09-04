@@ -20,6 +20,7 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
@@ -75,16 +76,21 @@ public class ConfigurationOptionCompoundDerivation
     }
 
     /** Signal end of current test to allow the docker container to go to sleep */
-    public void containerUsageEnded() {
+    public void containerUsageEnded(TestContext testContext) {
         Set<ConfigurationOptionDerivationParameter> configOptionDerivations =
                 new HashSet<>(getSelectedValue());
-        ConfigurationOptionsDerivationManager.getInstance()
-                .getConfigurationOptionsBuildManager()
+        testContext
+                .getConfigurationOptionsExtension()
+                .getConfig()
+                .getBuildManager()
                 .onTestFinished(configOptionDerivations);
     }
 
-    public FeatureExtractionResult getAssociatedFeatureExtractionResult() {
-        return ConfigurationOptionsDerivationManager.getInstance()
+    public FeatureExtractionResult getAssociatedFeatureExtractionResult(TestContext testContext) {
+
+        return testContext
+                .getConfigurationOptionsExtension()
+                .getDerivationManager()
                 .getCompoundFeatureExtractionResult()
                 .get(getSelectedValue());
     }
@@ -159,9 +165,15 @@ public class ConfigurationOptionCompoundDerivation
         // set connection for container in config and ensure container is running
         Set<ConfigurationOptionDerivationParameter> configOptionDerivations =
                 new HashSet<>(getSelectedValue());
-        ConfigurationOptionsDerivationManager.getInstance()
-                .getConfigurationOptionsBuildManager()
-                .preparePeerConnection(config, TestContext.getInstance(), configOptionDerivations);
+        TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
+                .getConfigurationOptionsExtension()
+                .getConfig()
+                .getBuildManager()
+                .preparePeerConnection(
+                        config,
+                        TestContextRegistry.byExtensionContext(
+                                derivationScope.getExtensionContext()),
+                        configOptionDerivations);
     }
 
     @Override
@@ -174,9 +186,13 @@ public class ConfigurationOptionCompoundDerivation
                 derivationScope.getIpmLimitations().stream()
                         .map(ParameterIdentifier::getParameterType)
                         .collect(Collectors.toSet());
-        if (ConfigurationOptionsDerivationManager.getInstance().getCompoundSetupList() != null) {
+        List<List<ConfigurationOptionDerivationParameter>> setupList = TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
+                        .getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getCompoundSetupList();
+        if (setupList != null) {
             for (List<ConfigurationOptionDerivationParameter> setup :
-                    ConfigurationOptionsDerivationManager.getInstance().getCompoundSetupList()) {
+                    setupList) {
                 List<ConfigurationOptionDerivationParameter> constrainedSetupList =
                         new LinkedList<>(setup);
                 // Scope Limitations (Set respective parameters to their default value)

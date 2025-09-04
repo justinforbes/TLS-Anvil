@@ -22,7 +22,6 @@ import de.rub.nds.tlsattacker.core.workflow.WorkflowTrace;
 import de.rub.nds.tlsattacker.core.workflow.action.ReceiveAction;
 import de.rub.nds.tlsattacker.core.workflow.action.ReceiveTillAction;
 import de.rub.nds.tlsattacker.core.workflow.action.SendAction;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.Validator;
 import de.rub.nds.tlstest.framework.constants.AssertMsgs;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
@@ -64,8 +63,7 @@ public class RC4Ciphersuites extends Tls12Test {
                 parameterCombination.getParameter(CipherSuiteDerivation.class).getSelectedValue();
 
         List<CipherSuite> implemented =
-                new ArrayList<>(
-                        TestContext.getInstance().getFeatureExtractionResult().getCipherSuites());
+                new ArrayList<>(context.getFeatureExtractionResult().getCipherSuites());
         implemented.removeIf(i -> !i.toString().contains("RC4"));
         c.setDefaultClientSupportedCipherSuites(implemented);
         c.getDefaultClientSupportedCipherSuites().add(selectedCipherSuite);

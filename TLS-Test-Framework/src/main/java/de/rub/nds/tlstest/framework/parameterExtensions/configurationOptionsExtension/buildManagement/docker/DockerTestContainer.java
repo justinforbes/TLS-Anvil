@@ -39,6 +39,7 @@ public abstract class DockerTestContainer extends DockerContainer {
     protected FeatureExtractionResult feaureExtractionResult;
     protected String dockerHost;
     protected int inUseCount;
+    protected TestContext testContext;
 
     /**
      * Constructor.
@@ -55,12 +56,14 @@ public abstract class DockerTestContainer extends DockerContainer {
             String dockerTag,
             String containerId,
             String dockerHost,
-            Integer managerPort) {
+            Integer managerPort,
+            TestContext testContext) {
         super(dockerTag, containerId, dockerClient);
         this.dockerHost = dockerHost;
         this.managerPort = managerPort;
         this.feaureExtractionResult = null;
         this.inUseCount = 0;
+        this.testContext = testContext;
     }
 
     public String getDockerHost() {
@@ -186,7 +189,7 @@ public abstract class DockerTestContainer extends DockerContainer {
             LOGGER.info("Create site report for container with tag '{}'...", this.dockerTag);
             DockerContainerState state = getContainerState();
             startUsage();
-            ParallelExecutor parallelExecutor = TestContext.getInstance().getStateExecutor();
+            ParallelExecutor parallelExecutor = testContext.getStateExecutor();
             try {
                 if (state == DockerContainerState.PAUSED) {
                     unpauseAndWait();

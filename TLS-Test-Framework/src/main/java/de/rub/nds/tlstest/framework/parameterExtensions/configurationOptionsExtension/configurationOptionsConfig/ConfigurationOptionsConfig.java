@@ -10,10 +10,13 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
 import de.rub.nds.anvilcore.constants.TestEndpointType;
+import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.anvilcore.model.parameter.ParameterType;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
@@ -50,6 +53,7 @@ public class ConfigurationOptionsConfig {
     private String tlsLibraryName;
     private String tlsVersionName;
     private DockerBasedBuildManager buildManager;
+    private final TestContext testContext;
 
     private final Map<ParameterIdentifier, ConfigOptionValueTranslation> optionsToTranslation;
 
@@ -83,16 +87,19 @@ public class ConfigurationOptionsConfig {
     private static final int DEFAULT_MAX_RUNNING_CONTAINERS = 16;
     private static final int DEFAULT_MAX_RUNNING_SHUTDOWN_CONTAINERS = 8;
 
-    public ConfigurationOptionsConfig(Path configFilePath) throws FileNotFoundException {
+    public ConfigurationOptionsConfig(Path configFilePath, TestContext testContext)
+            throws FileNotFoundException {
         optionsToTranslation = new HashMap<>();
         parseConfigFile(new FileInputStream(configFilePath.toFile()));
-        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this));
+        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
+        this.testContext = testContext;
     }
 
-    public ConfigurationOptionsConfig(InputStream inputStream) {
+    public ConfigurationOptionsConfig(InputStream inputStream, TestContext testContext) {
         optionsToTranslation = new HashMap<>();
+        this.testContext = testContext;
         parseConfigFile(inputStream);
-        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this));
+        buildManager = new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
     }
 
     public String getTlsLibraryName() {
@@ -196,10 +203,7 @@ public class ConfigurationOptionsConfig {
                     Integer.parseInt(configOptionsIpmStrengthElement.getTextContent());
         } else {
             configOptionsIpmStrength =
-                    TestContext.getInstance()
-                            .getConfig()
-                            .getAnvilTestConfig()
-                            .getStrength(); // default
+                    testContext.getConfig().getAnvilTestConfig().getStrength(); // default
         }
     }
 
@@ -260,7 +264,7 @@ public class ConfigurationOptionsConfig {
                     XmlParseUtils.findElement(
                             dockerConfigElement,
                             "dockerClientDestinationHost",
-                            (TestContext.getInstance().getConfig().getTestEndpointMode()
+                            (testContext.getConfig().getTestEndpointMode()
                                     == TestEndpointType.CLIENT));
             if (dockerClientDestElement != null) {
                 dockerClientDestinationHostName = dockerClientDestElement.getTextContent();
@@ -334,8 +338,10 @@ public class ConfigurationOptionsConfig {
 
     private ConfigOptionParameterType derivationTypeFromString(String str)
             throws IllegalArgumentException {
+        AnvilContext anvilContext =
+                AnvilContextRegistry.getContext(TestContextRegistry.getContextId(testContext));
         List<ParameterIdentifier> configOptionIdentifiers =
-                TlsParameterIdentifierProvider.getAllParameterIdentifiers().stream()
+                TlsParameterIdentifierProvider.getAllParameterIdentifiers(anvilContext).stream()
                         .filter(
                                 identifier ->
                                         identifier.getParameterScope()
@@ -364,5 +370,9 @@ public class ConfigurationOptionsConfig {
 
     public DockerBasedBuildManager getBuildManager() {
         return buildManager;
+    }
+
+    public TestContext getTestContext() {
+        return testContext;
     }
 }

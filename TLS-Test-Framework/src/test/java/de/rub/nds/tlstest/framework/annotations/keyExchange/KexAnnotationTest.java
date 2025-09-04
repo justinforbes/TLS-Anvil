@@ -15,7 +15,7 @@ public abstract class KexAnnotationTest {
 
     @BeforeAll
     static void setup() {
-        TestContext testContext = TestContext.getInstance();
+        TestContext testContext = new TestContext();
         ServerFeatureExtractionResult report = new ServerFeatureExtractionResult("", 4433);
 
         report.setSupportedCipherSuites(

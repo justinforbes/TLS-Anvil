@@ -12,6 +12,8 @@ import de.rub.nds.anvilcore.model.DerivationScope;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -32,6 +34,8 @@ public class CipherSuiteDerivation extends TlsDerivationParameter<CipherSuite> {
 
     @Override
     public void applyToConfig(Config config, DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         if (context.getConfig().getTestEndpointMode() == TestEndpointType.SERVER) {
             config.setDefaultClientSupportedCipherSuites(getSelectedValue());
         } else {
@@ -43,6 +47,8 @@ public class CipherSuiteDerivation extends TlsDerivationParameter<CipherSuite> {
     @Override
     public List<DerivationParameter<Config, CipherSuite>> getParameterValues(
             DerivationScope derivationScope) {
+        TestContext context =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
         List<DerivationParameter<Config, CipherSuite>> parameterValues = new LinkedList<>();
         Set<CipherSuite> cipherSuiteList = context.getFeatureExtractionResult().getCipherSuites();
         cipherSuiteList.addAll(

@@ -3,7 +3,7 @@ package de.rub.nds.tlstest.framework.execution;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.rub.nds.anvilcore.constants.TestEndpointType;
-import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.junit.extension.EndpointConditionExtension;
 import de.rub.nds.scanner.core.probe.ProbeType;
 import de.rub.nds.scanner.core.probe.result.TestResults;
@@ -413,7 +413,8 @@ public class TestPreparator {
      */
     private void setGlobalClientTestCallbacks(ParallelExecutor preparedExecutor) {
         // Ensure we always retain our external socket
-        preparedExecutor.setDefaultBeforeTransportPreInitCallback(getSocketManagementCallback());
+        preparedExecutor.setDefaultBeforeTransportPreInitCallback(
+                getSocketManagementCallback(testContext));
         // Ensure we always trigger the client
         preparedExecutor.setDefaultBeforeTransportInitCallback(
                 tlsAnvilConfig.getTestClientDelegate().getTriggerScript());
@@ -480,12 +481,14 @@ public class TestPreparator {
      */
     private ClientHelloMessage catchClientHello(ParallelExecutor executor) {
         LOGGER.info("Attempting to receive a Client Hello");
-        return catchClientHello(executor, tlsAnvilConfig.getTestClientDelegate().getPort());
+        return catchClientHello(
+                executor, tlsAnvilConfig.getTestClientDelegate().getPort(), testContext);
     }
 
-    public static ClientHelloMessage catchClientHello(ParallelExecutor executor, int port) {
+    public static ClientHelloMessage catchClientHello(
+            ParallelExecutor executor, int port, TestContext testContext) {
 
-        TlsAnvilConfig tlsAnvilConfig = TestContext.getInstance().getConfig();
+        TlsAnvilConfig tlsAnvilConfig = testContext.getConfig();
         Config config = tlsAnvilConfig.createConfig();
         config.setDefaultServerConnection(new InboundConnection(port));
         WorkflowTrace catchHelloWorkflowTrace = new WorkflowTrace();
@@ -505,7 +508,8 @@ public class TestPreparator {
      *
      * @return returns true if preparation was successful, false if the test cannot be started
      */
-    public boolean prepareTestExecution() {
+    public boolean prepareTestExecution(TestPlan testPlan) {
+        tlsAnvilConfig.setTestContext(testContext);
         if (!tlsAnvilConfig.isParsedArgs()) {
             return false;
         }
@@ -527,8 +531,7 @@ public class TestPreparator {
         LOGGER.info("Starting preparation phase");
         String configurationOptionsConfigFile = tlsAnvilConfig.getConfigOptionsConfigFile();
         if (!configurationOptionsConfigFile.isEmpty()) {
-            LOGGER.info("Preparing configuration options environment");
-            ConfigurationOptionsExtension.getInstance().load(configurationOptionsConfigFile);
+            prepareCombinatorialBuildSetup();
         } else {
             this.tlsAnvilConfig.createConfig();
             if (this.tlsAnvilConfig.getTestEndpointMode() == TestEndpointType.CLIENT) {
@@ -537,7 +540,7 @@ public class TestPreparator {
                 serverTestPreparation();
                 ServerFeatureExtractionResult featureExtractionResult =
                         (ServerFeatureExtractionResult) testContext.getFeatureExtractionResult();
-                AnvilContext.getInstance()
+                AnvilContextRegistry.byTestPlan(testPlan)
                         .getMapper()
                         .saveExtraFileToPath(
                                 featureExtractionResult.getGuidelineChecks(), "guidelines");
@@ -594,9 +597,16 @@ public class TestPreparator {
         return startTestSuite;
     }
 
+    private void prepareCombinatorialBuildSetup() {
+        LOGGER.info("Preparing configuration options environment");
+        ConfigurationOptionsExtension configurationOptionsExtension =
+                new ConfigurationOptionsExtension(testContext);
+        testContext.setConfigurationOptionsExtension(configurationOptionsExtension);
+        configurationOptionsExtension.load(configurationOptionsExtension);
+    }
+
     private void logCommonDerivationValues() {
-        FeatureExtractionResult featureExtractionResult =
-                TestContext.getInstance().getFeatureExtractionResult();
+        FeatureExtractionResult featureExtractionResult = testContext.getFeatureExtractionResult();
         LOGGER.info(
                 "Supported Protocol Versions: {}",
                 featureExtractionResult.getSupportedVersions().stream()
@@ -630,10 +640,9 @@ public class TestPreparator {
      *
      * @return Function to set socket in created state
      */
-    public static Function<State, Integer> getSocketManagementCallback() {
+    public static Function<State, Integer> getSocketManagementCallback(TestContext context) {
         return (State state) -> {
             TransportHandler transportHandler;
-            TestContext context = TestContext.getInstance();
             TestClientDelegate testClientDelegate = context.getConfig().getTestClientDelegate();
             if (context.getConfig().isUseDTLS()) {
                 transportHandler =
@@ -645,9 +654,7 @@ public class TestPreparator {
                 if (testClientDelegate instanceof TestCOMultiClientDelegate) {
                     socket =
                             ((TestCOMultiClientDelegate)
-                                            TestContext.getInstance()
-                                                    .getConfig()
-                                                    .getTestClientDelegate())
+                                            context.getConfig().getTestClientDelegate())
                                     .getServerSocket(state.getConfig());
                 } else {
                     socket = testClientDelegate.getServerSocket();
@@ -715,11 +722,10 @@ public class TestPreparator {
      *
      * @param testPlan the testPlan, supplied by JUnits discovery
      */
-    public static void printTestInfo(TestPlan testPlan) {
+    public void printTestInfo(TestPlan testPlan) {
         LOGGER.info("Scheduled test templates:");
-        TestEndpointType executionEndpointType =
-                TestContext.getInstance().getConfig().getTestEndpointMode();
-        if (TestContext.getInstance().getConfig().isUseDTLS()) {
+        TestEndpointType executionEndpointType = testContext.getConfig().getTestEndpointMode();
+        if (testContext.getConfig().isUseDTLS()) {
             long clientDtls12 =
                     testPlan.countTestIdentifiers(
                             i ->
@@ -778,13 +784,10 @@ public class TestPreparator {
         }
         LOGGER.info(
                 "Testing using default strength "
-                        + TestContext.getInstance().getConfig().getAnvilTestConfig().getStrength());
+                        + testContext.getConfig().getAnvilTestConfig().getStrength());
         LOGGER.info(
                 "Default timeout "
-                        + TestContext.getInstance()
-                                .getConfig()
-                                .getAnvilTestConfig()
-                                .getConnectionTimeout()
+                        + testContext.getConfig().getAnvilTestConfig().getConnectionTimeout()
                         + " ms");
     }
 }

@@ -8,12 +8,13 @@
 package de.rub.nds.tlstest.framework.extractor;
 
 import de.rub.nds.anvilcore.annotation.AnvilTest;
+import de.rub.nds.anvilcore.annotation.EnforcedSenderRestriction;
 import de.rub.nds.anvilcore.annotation.NonCombinatorialAnvilTest;
 import de.rub.nds.anvilcore.constants.TestEndpointType;
 import de.rub.nds.anvilcore.junit.extension.EndpointConditionExtension;
 import de.rub.nds.anvilcore.teststate.reporting.MetadataFetcher;
 import de.rub.nds.tlstest.framework.TestContext;
-import de.rub.nds.tlstest.framework.annotations.EnforcedSenderRestriction;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +33,8 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 
 public class TestCaseExtractor {
+    public static final String TEST_EXTRACTOR_CONTEXT_ID = "TestCaseExtractorContext";
+    private final TestContext testContext;
     private static final Logger LOGGER = LogManager.getLogger(TestCaseExtractor.class);
 
     private String packageName;
@@ -39,11 +42,11 @@ public class TestCaseExtractor {
 
     public TestCaseExtractor(String packageName) {
         this.packageName = packageName;
+        this.testContext = TestContextRegistry.createContext(TEST_EXTRACTOR_CONTEXT_ID);
     }
 
     public void start() {
-        boolean detailedOutput =
-                TestContext.getInstance().getConfig().getTestExtractorDelegate().isDetailed();
+        boolean detailedOutput = testContext.getConfig().getTestExtractorDelegate().isDetailed();
 
         fetcher = new MetadataFetcher();
 
@@ -168,7 +171,7 @@ public class TestCaseExtractor {
                                         rfcHtml.getPrintableCounters());
                             }
                             rfcHtml.saveToFolder(
-                                    TestContext.getInstance()
+                                    testContext
                                             .getConfig()
                                             .getTestExtractorDelegate()
                                             .getOutputFolder());

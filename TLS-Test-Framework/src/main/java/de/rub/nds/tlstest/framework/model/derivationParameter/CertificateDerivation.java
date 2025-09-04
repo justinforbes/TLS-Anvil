@@ -21,6 +21,7 @@ import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.NamedGroup;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsDerivationParameter;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
@@ -35,60 +36,13 @@ import java.util.stream.Collectors;
 /** Selects CertificateKeyPairs for the IPM */
 public class CertificateDerivation extends TlsDerivationParameter<CertificateConfigChainValue> {
 
-    private final int MIN_RSA_SIG_KEY_LEN;
-    private final int MIN_RSA_KEY_LEN;
-    private final int MIN_DSS_KEY_LEN;
-    private final boolean ALLOW_DSS = true;
+    private int MIN_RSA_SIG_KEY_LEN;
+    private int MIN_RSA_KEY_LEN;
+    private int MIN_DSS_KEY_LEN;
+    private boolean ALLOW_DSS = true;
 
     public CertificateDerivation() {
         super(TlsParameterType.CERTIFICATE, CertificateConfigChainValue.class);
-        if (TestContext.getInstance()
-                        .getFeatureExtractionResult()
-                        .getResult(TlsAnalyzedProperty.ENFORCES_SERVER_CERT_MIN_KEY_SIZE_RSA_SIG)
-                == TestResults.TRUE) {
-            MIN_RSA_SIG_KEY_LEN =
-                    ((IntegerResult)
-                                    TestContext.getInstance()
-                                            .getFeatureExtractionResult()
-                                            .getResult(
-                                                    TlsAnalyzedProperty
-                                                            .SERVER_CERT_MIN_KEY_SIZE_RSA_SIG))
-                            .getValue();
-        } else {
-            MIN_RSA_SIG_KEY_LEN = 0;
-        }
-
-        if (TestContext.getInstance()
-                        .getFeatureExtractionResult()
-                        .getResult(TlsAnalyzedProperty.ENFORCES_SERVER_CERT_MIN_KEY_SIZE_RSA)
-                == TestResults.TRUE) {
-            MIN_RSA_KEY_LEN =
-                    ((IntegerResult)
-                                    TestContext.getInstance()
-                                            .getFeatureExtractionResult()
-                                            .getResult(
-                                                    TlsAnalyzedProperty
-                                                            .SERVER_CERT_MIN_KEY_SIZE_RSA))
-                            .getValue();
-        } else {
-            MIN_RSA_KEY_LEN = 0;
-        }
-
-        if (TestContext.getInstance()
-                        .getFeatureExtractionResult()
-                        .getResult(TlsAnalyzedProperty.ENFORCES_SERVER_CERT_MIN_KEY_SIZE_DSS)
-                == TestResults.TRUE) {
-            MIN_DSS_KEY_LEN =
-                    ((IntegerResult)
-                                    TestContext.getInstance()
-                                            .getFeatureExtractionResult()
-                                            .getResult(
-                                                    TlsAnalyzedProperty
-                                                            .SERVER_CERT_MIN_KEY_SIZE_DSS))
-                            .getValue();
-        } else {
-            MIN_DSS_KEY_LEN = 0;
-        }
     }
 
     public CertificateDerivation(CertificateConfigChainValue certChainConfig) {
@@ -98,8 +52,8 @@ public class CertificateDerivation extends TlsDerivationParameter<CertificateCon
 
     public List<DerivationParameter<Config, CertificateConfigChainValue>>
             getApplicableCertificateConfigs(
-                    TestContext context, DerivationScope scope, boolean allowUnsupportedPkGroups) {
-
+                    DerivationScope scope, boolean allowUnsupportedPkGroups) {
+        TestContext context = TestContextRegistry.byExtensionContext(scope.getExtensionContext());
         List<CertificateConfigChainValue> certConfigs =
                 X509CertificateChainProvider.getCertificateChainConfigs();
         return certConfigs.stream()
@@ -185,9 +139,10 @@ public class CertificateDerivation extends TlsDerivationParameter<CertificateCon
     private boolean certMatchesAnySupportedCipherSuite(
             List<X509CertificateConfig> configs, DerivationScope scope) {
         Set<CipherSuite> cipherSuites;
+        TestContext context = TestContextRegistry.byExtensionContext(scope.getExtensionContext());
         X509CertificateConfig config = configs.get(X509CertificateChainProvider.LEAF_CERT_INDEX);
         if (!TlsParameterIdentifierProvider.isTls13Test(scope)) { // TLS 1.2
-            cipherSuites = TestContext.getInstance().getFeatureExtractionResult().getCipherSuites();
+            cipherSuites = context.getFeatureExtractionResult().getCipherSuites();
             return cipherSuites.stream()
                     .map(AlgorithmResolver::getSuitableLeafCertificateKeyType)
                     .flatMap(Arrays::stream)
@@ -272,7 +227,8 @@ public class CertificateDerivation extends TlsDerivationParameter<CertificateCon
     @Override
     public List<DerivationParameter<Config, CertificateConfigChainValue>> getParameterValues(
             DerivationScope derivationScope) {
-        return getApplicableCertificateConfigs(context, derivationScope, false);
+        setKeySizeLimitations(derivationScope);
+        return getApplicableCertificateConfigs(derivationScope, false);
     }
 
     @Override
@@ -284,5 +240,57 @@ public class CertificateDerivation extends TlsDerivationParameter<CertificateCon
     public X509CertificateConfig getLeafConfig() {
         return (X509CertificateConfig)
                 getSelectedValue().get(X509CertificateChainProvider.LEAF_CERT_INDEX);
+    }
+
+    private void setKeySizeLimitations(DerivationScope derivationScope) {
+        TestContext testContext =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext());
+        if (testContext
+                        .getFeatureExtractionResult()
+                        .getResult(TlsAnalyzedProperty.ENFORCES_SERVER_CERT_MIN_KEY_SIZE_RSA_SIG)
+                == TestResults.TRUE) {
+            MIN_RSA_SIG_KEY_LEN =
+                    ((IntegerResult)
+                                    testContext
+                                            .getFeatureExtractionResult()
+                                            .getResult(
+                                                    TlsAnalyzedProperty
+                                                            .SERVER_CERT_MIN_KEY_SIZE_RSA_SIG))
+                            .getValue();
+        } else {
+            MIN_RSA_SIG_KEY_LEN = 0;
+        }
+
+        if (testContext
+                        .getFeatureExtractionResult()
+                        .getResult(TlsAnalyzedProperty.ENFORCES_SERVER_CERT_MIN_KEY_SIZE_RSA)
+                == TestResults.TRUE) {
+            MIN_RSA_KEY_LEN =
+                    ((IntegerResult)
+                                    testContext
+                                            .getFeatureExtractionResult()
+                                            .getResult(
+                                                    TlsAnalyzedProperty
+                                                            .SERVER_CERT_MIN_KEY_SIZE_RSA))
+                            .getValue();
+        } else {
+            MIN_RSA_KEY_LEN = 0;
+        }
+
+        if (testContext
+                        .getFeatureExtractionResult()
+                        .getResult(TlsAnalyzedProperty.ENFORCES_SERVER_CERT_MIN_KEY_SIZE_DSS)
+                == TestResults.TRUE) {
+            MIN_DSS_KEY_LEN =
+                    ((IntegerResult)
+                                    testContext
+                                            .getFeatureExtractionResult()
+                                            .getResult(
+                                                    TlsAnalyzedProperty
+                                                            .SERVER_CERT_MIN_KEY_SIZE_DSS))
+                            .getValue();
+        } else {
+            MIN_DSS_KEY_LEN = 0;
+        }
     }
 }

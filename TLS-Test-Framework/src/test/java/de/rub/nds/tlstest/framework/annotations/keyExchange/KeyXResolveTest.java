@@ -24,10 +24,11 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 @ExtendWith(ExtensionContextResolver.class)
 public class KeyXResolveTest {
+    private static TestContext testContext;
 
     @BeforeAll
     static void setup() {
-        TestContext testContext = TestContext.getInstance();
+        testContext = new TestContext();
         ServerFeatureExtractionResult report = new ServerFeatureExtractionResult("", 4433);
 
         report.setSupportedCipherSuites(
@@ -43,7 +44,7 @@ public class KeyXResolveTest {
     @Test
     @KeyExchange(supported = KeyExchangeType.RSA)
     public void test_resolve_singleSupported(ExtensionContext context) {
-        KeyExchange resolved = KeyX.resolveKexAnnotation(context);
+        KeyExchange resolved = KeyX.resolveKexAnnotation(context, testContext);
 
         assertEquals(resolved.supported().length, 1);
         assertEquals(resolved.supported()[0], KeyExchangeType.RSA);
@@ -52,14 +53,14 @@ public class KeyXResolveTest {
     @Test
     @KeyExchange(supported = {})
     public void test_resolve_withoutSupported(ExtensionContext context) {
-        KeyExchange resolved = KeyX.resolveKexAnnotation(context);
+        KeyExchange resolved = KeyX.resolveKexAnnotation(context, testContext);
         assertEquals(resolved.supported().length, 0);
     }
 
     @Test
     @KeyExchange(supported = {KeyExchangeType.RSA, KeyExchangeType.ECDH})
     public void test_resolve_multipleSupported(ExtensionContext context) {
-        KeyExchange resolved = KeyX.resolveKexAnnotation(context);
+        KeyExchange resolved = KeyX.resolveKexAnnotation(context, testContext);
 
         assertEquals(resolved.supported().length, 1);
         assertEquals(resolved.supported()[0], KeyExchangeType.RSA);
@@ -68,7 +69,7 @@ public class KeyXResolveTest {
     @Test
     @KeyExchange(supported = {KeyExchangeType.ALL13, KeyExchangeType.ECDH})
     public void test_resolve_unsupportedSupported(ExtensionContext context) {
-        KeyExchange resolved = KeyX.resolveKexAnnotation(context);
+        KeyExchange resolved = KeyX.resolveKexAnnotation(context, testContext);
 
         assertEquals(resolved.supported().length, 0);
     }
@@ -76,7 +77,7 @@ public class KeyXResolveTest {
     @Test
     @KeyExchange(supported = {KeyExchangeType.ALL12})
     public void test_resolve_supportedAll(ExtensionContext context) {
-        KeyExchange resolved = KeyX.resolveKexAnnotation(context);
+        KeyExchange resolved = KeyX.resolveKexAnnotation(context, testContext);
 
         assertEquals(resolved.supported().length, 1);
         assertEquals(resolved.supported()[0], KeyExchangeType.RSA);
@@ -87,7 +88,7 @@ public class KeyXResolveTest {
             supported = {KeyExchangeType.ECDH},
             requiresServerKeyExchMsg = true)
     public void test_resolve_requiresServerKeyExchMsg(ExtensionContext context) {
-        KeyExchange resolved = KeyX.resolveKexAnnotation(context);
+        KeyExchange resolved = KeyX.resolveKexAnnotation(context, testContext);
 
         assertEquals(resolved.supported().length, 0);
     }

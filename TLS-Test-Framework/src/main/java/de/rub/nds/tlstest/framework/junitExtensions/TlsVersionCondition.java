@@ -10,6 +10,7 @@ package de.rub.nds.tlstest.framework.junitExtensions;
 import de.rub.nds.tlsattacker.core.constants.ProtocolVersion;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.annotations.TlsVersion;
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class TlsVersionCondition extends BaseCondition {
         Method testMethod = extensionContext.getRequiredTestMethod();
         Class<?> testClass = extensionContext.getRequiredTestClass();
 
-        TestContext context = TestContext.getInstance();
+        TestContext context = TestContextRegistry.byExtensionContext(extensionContext);
         FeatureExtractionResult report = context.getFeatureExtractionResult();
         Set<ProtocolVersion> protocolVersionList = report.getSupportedVersions();
         ProtocolVersion[] testSupportedVersions = getSupportedTestVersions(testMethod, testClass);

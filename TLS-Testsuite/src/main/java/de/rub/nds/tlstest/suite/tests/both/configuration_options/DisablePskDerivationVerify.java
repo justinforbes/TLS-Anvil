@@ -33,12 +33,15 @@ public class DisablePskDerivationVerify extends Tls12Test {
 
     public ConditionEvaluationResult disablePskOptionTested() {
         if (!context.getConfig().getConfigOptionsConfigFile().isEmpty()
-                && ConfigurationOptionsDerivationManager.getInstance().getAllActivatedCOTypes()
+                && context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes()
                         != null
                 && CommonBuildParameterDerivation.isOptionListed(
                         "DISABLE_PSK",
-                        ConfigurationOptionsDerivationManager.getInstance()
-                                .getAllActivatedCOTypes())) {
+                        context.getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getAllActivatedCOTypes())) {
             return ConditionEvaluationResult.enabled("");
         } else {
             return ConditionEvaluationResult.disabled(
@@ -72,7 +75,8 @@ public class DisablePskDerivationVerify extends Tls12Test {
     public void pskCiphersuitesDisabled() {
         Map<List<ConfigurationOptionDerivationParameter>, FeatureExtractionResult>
                 compoundFeatureExtractionResults =
-                        ConfigurationOptionsDerivationManager.getInstance()
+                        context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
                                 .getCompoundFeatureExtractionResult();
         List<List<ConfigurationOptionDerivationParameter>> relevantConfigOptionSets =
                 compoundFeatureExtractionResults.keySet().stream()

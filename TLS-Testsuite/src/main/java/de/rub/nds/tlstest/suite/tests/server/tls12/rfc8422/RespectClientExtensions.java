@@ -24,7 +24,6 @@ import de.rub.nds.tlsattacker.core.workflow.WorkflowTrace;
 import de.rub.nds.tlsattacker.core.workflow.action.ReceiveTillAction;
 import de.rub.nds.tlsattacker.core.workflow.action.SendAction;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
-import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.Validator;
 import de.rub.nds.tlstest.framework.annotations.KeyExchange;
 import de.rub.nds.tlstest.framework.constants.AssertMsgs;
@@ -59,8 +58,7 @@ public class RespectClientExtensions extends Tls12Test {
     @NonCombinatorialAnvilTest(id = "8422-xyn7SDVFRX")
     public void respectsChosenCurveForCertificates() {
         assertTrue(
-                TestContext.getInstance()
-                                .getFeatureExtractionResult()
+                context.getFeatureExtractionResult()
                                 .getResult(TlsAnalyzedProperty.IGNORES_ECDSA_GROUP_DISPARITY)
                         != TestResults.TRUE,
                 "The server does not respect the client's supported curves when selecting the certificate");
