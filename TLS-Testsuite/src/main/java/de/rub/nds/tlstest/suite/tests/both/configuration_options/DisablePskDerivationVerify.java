@@ -32,6 +32,7 @@ public class DisablePskDerivationVerify extends Tls12Test {
 
     public ConditionEvaluationResult disablePskOptionTested() {
         if (!context.getConfig().getConfigOptionsConfigFile().isEmpty()
+                && context.getConfigurationOptionsExtension() != null
                 && context.getConfigurationOptionsExtension()
                                 .getDerivationManager()
                                 .getAllActivatedCOTypes()
