@@ -37,9 +37,7 @@
 
         <!-- 1st Priority Options -->
         <optionEntry>
-            <!-- The derivation type exactly like in the enum:
-                 de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionDerivationType -->
-            <derivationType>ConfigOptionParameter:SEEDING_METHOD</derivationType>
+            <derivationType>CommonBuildParameter:SEEDING_METHOD</derivationType>
             <!-- Optional: Enables or disables the respective option. Disabled options are ignored. Default: true  -->
             <enabled>true</enabled>
             <!-- Defines how option values are translated to library specific build flags/values. How to process these
@@ -48,7 +46,7 @@
                 <!-- Single option values are options that have an identifier and a single value like: '- -with-rand-seed=<seeding_method>' -->
                 <identifier>--with-rand-seed</identifier>
                 <!-- Every possible value must appear here. It is translated to a value that can be parsed by the tls library -->
-                <value key="OS_ENTROPY_SOURCE">os</value>
+                <value maxValue="true" key="OS_ENTROPY_SOURCE">os</value>
                 <value key="GET_RANDOM">getrandom</value>
                 <value key="DEV_RANDOM">devrandom</value>
                 <value key="ENTROPY_GENERATING_DAEMON">egd</value>
@@ -57,62 +55,62 @@
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:ENABLE_NIST_EC_OPTIMIZATIONS</derivationType>
+            <derivationType>CommonBuildParameter:ENABLE_NIST_EC_OPTIMIZATIONS</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <!-- Translations of type flag only have two values. Either the flag is set or not.
                      The translation data for a set flag is entered in the <true>-block. For an unset
                      flag in the <false>-block -->
-                <true>enable-ec_nistp_64_gcc_128</true>
+                <true maxValue="true">enable-ec_nistp_64_gcc_128</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_SSE2</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_SSE2</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-sse2</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_BINARY_ELLIPTIC_CURVES</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_BINARY_ELLIPTIC_CURVES</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-ec2m</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_MULTIBLOCK</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_MULTIBLOCK</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-multiblock</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_PSK</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_PSK</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-psk</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:ENABLE_COMPRESSION</derivationType>
+            <derivationType>CommonBuildParameter:ENABLE_COMPRESSION</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
-                <true>zlib</true>
+                <true maxValue="true">zlib</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_ASSEMBLER_CODE</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_ASSEMBLER_CODE</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
                 <true>no-asm</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
 
@@ -122,74 +120,74 @@
         <!-- In this example file we only enable the 7 options with the highest priority. However we can
              easily reuse config files for other option sets. We only need to toggle the <enabled> field.-->
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_AFALG_ENGINE</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_AFALG_ENGINE</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-afalgeng</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:ENABLE_ENTROPY_GATHERING_DAEMON</derivationType>
+            <derivationType>CommonBuildParameter:ENABLE_ENTROPY_GATHERING_DAEMON</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-egd</true>
+                <true maxValue="true">enable-egd</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_RDRAND</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_RDRAND</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-rdrand</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_CERTIFICATE_TRANSPARENCY</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_CERTIFICATE_TRANSPARENCY</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-ct</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_NEXT_PROTOCOL_NEGOTIATION</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_NEXT_PROTOCOL_NEGOTIATION</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-nextprotoneg</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_OCSP_SUPPORT</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_OCSP_SUPPORT</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-ocsp</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
             <derivationType>ConfigOptionParameter:ENABLE_WEAK_SSL_CIPHERS</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-weak-ssl-ciphers</true>
+                <true maxValue="true">enable-weak-ssl-ciphers</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:ENABLE_MD2</derivationType>
+            <derivationType>CommonBuildParameter:ENABLE_MD2</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-md2</true>
+                <true maxValue="true">enable-md2</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:ENABLE_RC5</derivationType>
+            <derivationType>CommonBuildParameter:ENABLE_RC5</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-rc5</true>
+                <true maxValue="true">enable-rc5</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
@@ -198,51 +196,51 @@
 
         <!-- 3rd Priority Options -->
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_PADLOCK_ENGINE</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_PADLOCK_ENGINE</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-hw-padlock</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_POSIX_IO</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_POSIX_IO</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-posix-io</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_EXTENSION_FOR_IP_ADRESSES_AND_AS_IDENTIFIERS</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_EXTENSION_FOR_IP_ADRESSES_AND_AS_IDENTIFIERS</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-rfc3779</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_SRP_CIPHER_SUITES</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_SRP_CIPHER_SUITES</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-srp</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:ENABLE_MEMORY_DEBUGGING_SUPPORT</derivationType>
+            <derivationType>CommonBuildParameter:ENABLE_MEMORY_DEBUGGING_SUPPORT</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
-                <true>enable-crypto-mdebug</true>
+                <true maxValue="true">enable-crypto-mdebug</true>
                 <false></false>
             </valueTranslation>
         </optionEntry>
         <optionEntry>
-            <derivationType>ConfigOptionParameter:DISABLE_ERROR_STRINGS</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_ERROR_STRINGS</derivationType>
             <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-err</true>
-                <false></false>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
 

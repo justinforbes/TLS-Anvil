@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import de.rub.nds.anvilcore.annotation.*;
 import de.rub.nds.anvilcore.junit.extension.MethodConditionExtension;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
+import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,11 +23,17 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 public class AnnotationReferences {
     @Test
     public void referencesMatchParameterIdentifiers() {
+        List<ParameterIdentifier> knownTlsIdentifiers = new LinkedList<ParameterIdentifier>();
+        new TlsParameterIdentifierProvider().generateAllTlsParameters(knownTlsIdentifiers);
+        knownTlsIdentifiers.add(
+                new ParameterIdentifier(
+                        ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER,
+                        ParameterScope.NO_SCOPE));
+
         List<String> knownIdentifierStrings =
-                new TlsParameterIdentifierProvider()
-                        .generateAllParameterIdentifiers().stream()
-                                .map(ParameterIdentifier::name)
-                                .collect(Collectors.toList());
+                knownTlsIdentifiers.stream()
+                        .map(ParameterIdentifier::name)
+                        .collect(Collectors.toList());
         Reflections reflections =
                 new Reflections("de.rub.nds.tlstest", new MethodAnnotationsScanner());
         Set<Method> testMethods =

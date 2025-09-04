@@ -11,7 +11,7 @@ package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExt
 
 import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
-import de.rub.nds.anvilcore.model.parameter.ParameterScope;
+import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
@@ -57,6 +57,7 @@ public class ConfigurationOptionsDerivationManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private ConfigurationOptionsConfig config;
     private List<List<ConfigurationOptionDerivationParameter>> compoundSetupList;
+
     private Map<List<ConfigurationOptionDerivationParameter>, FeatureExtractionResult>
             compoundFeatureExtractionResult;
 
@@ -68,7 +69,7 @@ public class ConfigurationOptionsDerivationManager {
         compoundFeatureExtractionResult = null;
     }
 
-    public List<ConfigOptionParameterType> getAllActivatedCOTypes() {
+    public List<ParameterIdentifier> getAllActivatedCOTypes() {
         return new LinkedList<>(config.getEnabledConfigOptionDerivations());
     }
 
@@ -118,10 +119,9 @@ public class ConfigurationOptionsDerivationManager {
         InputParameterModel.Builder builder =
                 InputParameterModel.inputParameterModel("configuration-options-ipm");
         builder.strength(strength);
-        for (ConfigOptionParameterType coType : config.getEnabledConfigOptionDerivations()) {
+        for (ParameterIdentifier coIdentifier : config.getEnabledConfigOptionDerivations()) {
             ConfigurationOptionDerivationParameter coDerivationParameter =
-                    (ConfigurationOptionDerivationParameter)
-                            coType.getInstance(ParameterScope.NO_SCOPE);
+                    (ConfigurationOptionDerivationParameter) coIdentifier.getInstance();
             // DerivationScopes are bound to test templates but this selection happens idependently
             // of any test template so we use null
             List<DerivationParameter<Config, ConfigurationOptionValue>> derivationParameterValues =
@@ -131,7 +131,7 @@ public class ConfigurationOptionsDerivationManager {
             for (int idx = 0; idx < derivationParameterValues.size(); idx++) {
                 values.add(new Value(idx, derivationParameterValues.get(idx)));
             }
-            builder.parameter(new Parameter(coType.name(), values));
+            builder.parameter(new Parameter(coIdentifier.name(), values));
             // - Add constraints
             List<ConditionalConstraint> constraints =
                     coDerivationParameter.getDefaultConditionalConstraints(null);
@@ -198,7 +198,7 @@ public class ConfigurationOptionsDerivationManager {
 
         compoundSetupList = Collections.unmodifiableList(compoundSetupList);
 
-        LOGGER.info("Compiled {} configuration option combinations", compoundSetupList.size());
+        LOGGER.info("Compiled {} configuration option combinations.", compoundSetupList.size());
     }
 
     public void preBuildAndValidateAndFilterSetups() {
@@ -294,5 +294,10 @@ public class ConfigurationOptionsDerivationManager {
 
     public List<List<ConfigurationOptionDerivationParameter>> getCompoundSetupList() {
         return compoundSetupList;
+    }
+
+    public void setCompoundSetupList(
+            List<List<ConfigurationOptionDerivationParameter>> compoundSetupList) {
+        this.compoundSetupList = compoundSetupList;
     }
 }

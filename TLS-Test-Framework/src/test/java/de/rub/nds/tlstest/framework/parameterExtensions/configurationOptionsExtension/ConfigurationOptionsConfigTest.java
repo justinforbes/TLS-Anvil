@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.context.AnvilTestConfig;
+import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
@@ -44,7 +45,7 @@ public class ConfigurationOptionsConfigTest {
                        <configOptionsIpmStrength>2</configOptionsIpmStrength>
                        <optionsToTest>
                            <optionEntry>
-                               <derivationType>ConfigOptionParameter:DISABLE_PSK</derivationType>
+                               <derivationType>CommonBuildParameter:DISABLE_PSK</derivationType>
                                <enabled>true</enabled>
                                <valueTranslation type="Flag">
                                    <true>no-psk</true>"
@@ -52,7 +53,7 @@ public class ConfigurationOptionsConfigTest {
                                </valueTranslation>
                            </optionEntry>
                            <optionEntry>
-                               <derivationType>ConfigOptionParameter:SEEDING_METHOD</derivationType>"
+                               <derivationType>CommonBuildParameter:SEEDING_METHOD</derivationType>"
                                <valueTranslation type="SingleValueOption">
                                    <identifier>--with-rand-seed</identifier>
                                    <value key="OS_ENTROPY_SOURCE">os</value>
@@ -96,7 +97,11 @@ public class ConfigurationOptionsConfigTest {
         // Check flag translation
         {
             ConfigOptionValueTranslation translation =
-                    config.getOptionsToTranslationMap().get(ConfigOptionParameterType.DISABLE_PSK);
+                    config.getOptionsToTranslationMap()
+                            .get(
+                                    new ParameterIdentifier(
+                                            ConfigOptionParameterType.COMMON_BUILD_FLAG,
+                                            new CommonBuildParameterScope("DISABLE_PSK")));
             assertNotNull(translation);
             assertInstanceOf(FlagTranslation.class, translation);
             FlagTranslation flagTranslation = (FlagTranslation) translation;
@@ -108,7 +113,10 @@ public class ConfigurationOptionsConfigTest {
         {
             ConfigOptionValueTranslation translation =
                     config.getOptionsToTranslationMap()
-                            .get(ConfigOptionParameterType.SEEDING_METHOD);
+                            .get(
+                                    new ParameterIdentifier(
+                                            ConfigOptionParameterType.COMMON_BUILD_FLAG,
+                                            new CommonBuildParameterScope("SEEDING_METHOD")));
             assertNotNull(translation);
             assertInstanceOf(SingleValueOptionTranslation.class, translation);
             SingleValueOptionTranslation singleTranslation =

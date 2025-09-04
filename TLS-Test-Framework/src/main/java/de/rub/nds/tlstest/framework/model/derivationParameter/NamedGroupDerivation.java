@@ -73,6 +73,8 @@ public class NamedGroupDerivation extends TlsDerivationParameter<NamedGroup> {
                 config.setDefaultServerNamedGroups(getSelectedValue());
             }
             config.setDefaultSelectedNamedGroup(getSelectedValue());
+            config.setAddEllipticCurveExtension(true);
+            config.setAddECPointFormatExtension(true);
         } else {
             config.setAddEllipticCurveExtension(false);
             config.setAddECPointFormatExtension(false);

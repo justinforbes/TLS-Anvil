@@ -17,14 +17,14 @@ import de.rub.nds.tlsattacker.core.constants.CompressionMethod;
 import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.CommonBuildParameterDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.EnableCompressionDerivation;
 import de.rub.nds.tlstest.framework.testClasses.Tls12Test;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
@@ -40,15 +40,16 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
             return ConditionEvaluationResult.disabled(
                     "Compression support could not be evaluated by feature extraction");
         }
-        if (!context.getConfig().getConfigOptionsConfigFile().isEmpty()
+        if (context.getConfigurationOptionsExtension() != null
                 && context.getConfigurationOptionsExtension()
                                 .getDerivationManager()
                                 .getAllActivatedCOTypes()
                         != null
-                && context.getConfigurationOptionsExtension()
-                        .getDerivationManager()
-                        .getAllActivatedCOTypes()
-                        .contains(ConfigOptionParameterType.ENABLE_COMPRESSION)) {
+                && CommonBuildParameterDerivation.isOptionListed(
+                        "ENABLE_COMPRESSION",
+                        context.getConfigurationOptionsExtension()
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes())) {
             return ConditionEvaluationResult.enabled("");
         } else {
             return ConditionEvaluationResult.disabled(
@@ -56,17 +57,25 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
         }
     }
 
-    public boolean onlyCompressionEnabledOptionsSet(
-            List<ConfigurationOptionDerivationParameter> possibleValue) {
-        for (ConfigurationOptionDerivationParameter listedParameter : possibleValue) {
+    private boolean isCompressionEnabled(List<ConfigurationOptionDerivationParameter> parameters) {
+        for (ConfigurationOptionDerivationParameter listedParameter : parameters) {
             if (listedParameter.getParameterIdentifier().getParameterType()
-                    == ConfigOptionParameterType.ENABLE_COMPRESSION) {
-                return ((EnableCompressionDerivation) listedParameter)
+                            == ConfigOptionParameterType.COMMON_BUILD_FLAG
+                    && ((CommonBuildParameterScope)
+                                    listedParameter.getParameterIdentifier().getParameterScope())
+                            .getParameterSpecifier()
+                            .equals("ENABLE_COMPRESSION")) {
+                return ((CommonBuildParameterDerivation) listedParameter)
                         .getSelectedValue()
                         .isOptionSet();
             }
         }
         return false;
+    }
+
+    public boolean onlyCompressionEnabledOptionsSet(
+            List<ConfigurationOptionDerivationParameter> possibleValue) {
+        return isCompressionEnabled(possibleValue);
     }
 
     @NonCombinatorialAnvilTest(id = "XCO-s74Cw9S5dF")
@@ -81,21 +90,7 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
                 compoundFeatureExtractionResults.keySet().stream()
                         .filter(
                                 list -> {
-                                    Optional<ConfigurationOptionDerivationParameter> pskParameter =
-                                            list.stream()
-                                                    .filter(
-                                                            parameter ->
-                                                                    parameter.getClass()
-                                                                            == EnableCompressionDerivation
-                                                                                    .class)
-                                                    .findFirst();
-                                    if (pskParameter.isPresent()) {
-                                        return ((EnableCompressionDerivation) pskParameter.get())
-                                                .getSelectedValue()
-                                                .isOptionSet();
-                                    }
-
-                                    return false;
+                                    return isCompressionEnabled(list);
                                 })
                         .collect(Collectors.toList());
         for (List<ConfigurationOptionDerivationParameter> configOptionSet :

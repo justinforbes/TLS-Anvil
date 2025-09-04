@@ -11,6 +11,7 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import org.w3c.dom.NodeList;
 public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
     private String identifier;
     private final Map<String, String> valueTranslationMap;
+    private String richestConfigurationLabel = "";
 
     public SingleValueOptionTranslation(Element xmlElement) {
         valueTranslationMap = new HashMap<>();
@@ -47,6 +49,10 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
         return valueTranslationMap.get(key);
     }
 
+    public List<String> getOptions() {
+        return valueTranslationMap.keySet().stream().collect(Collectors.toList());
+    }
+
     @Override
     protected void setFromXmlElement(Element xmlElement) {
         try {
@@ -63,7 +69,10 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
                 Node valueNode = valueElementList.item(optionEntryIdx);
                 if (valueNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element valueElement = (Element) valueNode;
-                    addValueTranslationByElement(valueElement);
+                    boolean isRichest =
+                            valueNode.hasAttributes()
+                                    && valueNode.getAttributes().getNamedItem("maxValue") != null;
+                    addValueTranslationByElement(valueElement, isRichest);
                 }
             }
         } catch (Exception e) {
@@ -73,7 +82,7 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
         }
     }
 
-    private void addValueTranslationByElement(Element valueElement) {
+    private void addValueTranslationByElement(Element valueElement, boolean isRichest) {
         String key = valueElement.getAttribute("key");
         if (key.equals("")) {
             throw new IllegalArgumentException(
@@ -88,6 +97,13 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
                             identifier, key));
         }
         String value = valueElement.getTextContent();
+        if (isRichest) {
+            richestConfigurationLabel = key;
+        }
         valueTranslationMap.put(key, value);
+    }
+
+    public boolean isRichestConfiguration(String key) {
+        return key.equals(richestConfigurationLabel);
     }
 }

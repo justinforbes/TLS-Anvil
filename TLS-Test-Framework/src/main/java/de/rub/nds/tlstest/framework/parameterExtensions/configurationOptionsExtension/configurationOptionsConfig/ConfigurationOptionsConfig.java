@@ -13,9 +13,12 @@ import de.rub.nds.anvilcore.constants.TestEndpointType;
 import de.rub.nds.anvilcore.context.AnvilContext;
 import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
+import de.rub.nds.anvilcore.model.parameter.ParameterScope;
+import de.rub.nds.anvilcore.model.parameter.ParameterType;
 import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.docker.DockerBasedBuildManager;
@@ -52,7 +55,7 @@ public class ConfigurationOptionsConfig {
     private DockerBasedBuildManager buildManager;
     private final TestContext testContext;
 
-    private final Map<ConfigOptionParameterType, ConfigOptionValueTranslation> optionsToTranslation;
+    private final Map<ParameterIdentifier, ConfigOptionValueTranslation> optionsToTranslation;
 
     private int configOptionsIpmStrength; // default: strength of main IPM
 
@@ -131,12 +134,11 @@ public class ConfigurationOptionsConfig {
         return dockerClientDestinationHostName;
     }
 
-    public Map<ConfigOptionParameterType, ConfigOptionValueTranslation>
-            getOptionsToTranslationMap() {
+    public Map<ParameterIdentifier, ConfigOptionValueTranslation> getOptionsToTranslationMap() {
         return new HashMap<>(optionsToTranslation);
     }
 
-    public Set<ConfigOptionParameterType> getEnabledConfigOptionDerivations() {
+    public Set<ParameterIdentifier> getEnabledConfigOptionDerivations() {
         return new HashSet<>(optionsToTranslation.keySet());
     }
 
@@ -297,12 +299,11 @@ public class ConfigurationOptionsConfig {
                 }
 
                 // Parse derivation type
-                ConfigOptionParameterType derivationType =
-                        derivationTypeFromString(
-                                Objects.requireNonNull(
-                                                XmlParseUtils.findElement(
-                                                        optionEntry, "derivationType", true))
-                                        .getTextContent());
+                String type =
+                        Objects.requireNonNull(
+                                        XmlParseUtils.findElement(
+                                                optionEntry, "derivationType", true))
+                                .getTextContent();
 
                 // Parse value translation
                 ConfigOptionValueTranslation translation =
@@ -310,23 +311,29 @@ public class ConfigurationOptionsConfig {
                                 Objects.requireNonNull(
                                         XmlParseUtils.findElement(
                                                 optionEntry, "valueTranslation", true)));
-                optionsToTranslation.put(derivationType, translation);
-            }
-        }
-    }
 
-    private DockerBasedBuildManager getBuildManagerFromString(String str) {
-        if ("OpenSSLBuildManager".equals(str)) {
-            if (!dockerConfigPresent) {
-                throw new RuntimeException(
-                        "dockerConfig field is required for using the OpenSSLBuildManager");
+                ParameterScope scopeToUse = null;
+                ParameterType typeToUse = null;
+                if (type.startsWith(CommonBuildParameterScope.SCOPE_IDENTIFIER + ":")) {
+                    String optionName = type.split(":")[1];
+                    typeToUse = ConfigOptionParameterType.COMMON_BUILD_FLAG;
+                    scopeToUse = new CommonBuildParameterScope(optionName);
+                } else {
+                    scopeToUse = ConfigOptionParameterScope.DEFAULT;
+                    typeToUse = derivationTypeFromString(type);
+                }
+
+                if (scopeToUse == null || typeToUse == null) {
+                    throw new IllegalArgumentException(
+                            "Failed to resolve config option derivation type '"
+                                    + type
+                                    + "' to parameter with options.");
+                }
+
+                optionsToTranslation.put(
+                        new ParameterIdentifier(typeToUse, scopeToUse), translation);
             }
-            return new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
         }
-        throw new UnsupportedOperationException(
-                String.format(
-                        "There is no ConfigurationOptionsBuildManager of name '%s' known to this parser.",
-                        str));
     }
 
     private ConfigOptionParameterType derivationTypeFromString(String str)

@@ -15,6 +15,7 @@ package de.rub.nds.tlstest.suite.tests.server.tls13.rfc8446;
 import static org.junit.jupiter.api.Assertions.*;
 
 import de.rub.nds.anvilcore.annotation.AnvilTest;
+import de.rub.nds.anvilcore.annotation.DynamicValueConstraints;
 import de.rub.nds.anvilcore.annotation.IncludeParameter;
 import de.rub.nds.anvilcore.annotation.MethodCondition;
 import de.rub.nds.anvilcore.annotation.ServerTest;
@@ -39,6 +40,7 @@ import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.Validator;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import de.rub.nds.tlstest.framework.testClasses.Tls13Test;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -51,6 +53,25 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 public class PreSharedKey extends Tls13Test {
 
     public static final String PSK_HANDSHAKES_NOT_SUPPORTED = "SUT does not support PSK handshakes";
+
+    public boolean isNotPskDisabledBuild(
+            List<ConfigurationOptionDerivationParameter> settingCandidate) {
+        ConfigurationOptionDerivationParameter pskParameter =
+                settingCandidate.stream()
+                        .filter(
+                                parameter ->
+                                        parameter
+                                                .getParameterIdentifier()
+                                                .getParameterScope()
+                                                .getUniqueScopeIdentifier()
+                                                .contains("DISABLE_PSK"))
+                        .findFirst()
+                        .orElse(null);
+        if (pskParameter == null) {
+            return true;
+        }
+        return !pskParameter.getSelectedValue().isOptionSet();
+    }
 
     public ConditionEvaluationResult supportsPsk() {
         if (context.getFeatureExtractionResult().getResult(TlsAnalyzedProperty.SUPPORTS_TLS13_PSK)
@@ -106,6 +127,9 @@ public class PreSharedKey extends Tls13Test {
 
     @AnvilTest(id = "8446-8RhYHEGBvv")
     @MethodCondition(method = "supportsPsk")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @Tag("new")
     public void isNotLastExtension(AnvilTestCase testCase, WorkflowRunner runner) {
         Config config = getPreparedConfig(runner);
@@ -138,6 +162,9 @@ public class PreSharedKey extends Tls13Test {
 
     @AnvilTest(id = "8446-K5PYwUqs8E")
     @MethodCondition(method = "supportsPsk")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @Tag("new")
     public void isLastButDuplicatedExtension(AnvilTestCase testCase, WorkflowRunner runner) {
         Config config = getPreparedConfig(runner);
@@ -152,6 +179,9 @@ public class PreSharedKey extends Tls13Test {
 
     @AnvilTest(id = "8446-Hq5yKcFcmQ")
     @MethodCondition(method = "supportsPskOnlyHandshake")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @Tag("new")
     public void respectsKeyExchangeChoicePskOnly(AnvilTestCase testCase, WorkflowRunner runner) {
         Config config = getPreparedConfig(runner);
@@ -181,6 +211,9 @@ public class PreSharedKey extends Tls13Test {
 
     @AnvilTest(id = "8446-Eqo9cmGAET")
     @MethodCondition(method = "supportsPskDheHandshake")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @Tag("new")
     public void respectsKeyExchangeChoicePskDhe(AnvilTestCase testCase, WorkflowRunner runner) {
         Config config = getPreparedConfig(runner);
@@ -209,6 +242,9 @@ public class PreSharedKey extends Tls13Test {
 
     @AnvilTest(id = "8446-AGtoN1G2B3")
     @IncludeParameter("PRF_BITMASK")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @MethodCondition(method = "supportsPsk")
     public void invalidBinder(AnvilTestCase testCase, WorkflowRunner runner) {
         Config config = getPreparedConfig(runner);
@@ -235,6 +271,9 @@ public class PreSharedKey extends Tls13Test {
     }
 
     @AnvilTest(id = "8446-1SEHo5n8WM")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @MethodCondition(method = "supportsPsk")
     public void noBinder(AnvilTestCase testCase, WorkflowRunner runner) {
         Config config = getPreparedConfig(runner);
@@ -261,6 +300,9 @@ public class PreSharedKey extends Tls13Test {
     }
 
     @AnvilTest(id = "8446-2eQTsmq7d1")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @MethodCondition(method = "supportsPsk")
     public void selectedPSKIndexIsWithinOfferedListSize(
             AnvilTestCase testCase, WorkflowRunner runner) {
@@ -314,6 +356,9 @@ public class PreSharedKey extends Tls13Test {
     }
 
     @AnvilTest(id = "8446-Yo68xBhELu")
+    @DynamicValueConstraints(
+            affectedIdentifiers = "CONFIG_OPTION_COMPOUND_PARAMETER",
+            methods = "isNotPskDisabledBuild")
     @MethodCondition(method = "supportsMultipleHdkfHashesAndPsk")
     @Tag("new")
     public void resumeWithCipherWithDifferentHkdfHash(

@@ -22,6 +22,7 @@ import de.rub.nds.tlstest.framework.constants.KeyX;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -37,8 +38,14 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
      * @return all known ParameterIdentifiers
      */
     @Override
-    public List<ParameterIdentifier> generateAllParameterIdentifiers() {
+    public List<ParameterIdentifier> generateAllParameterIdentifiers(String anvilContextId) {
         List<ParameterIdentifier> identifiers = new LinkedList<>();
+        generateAllTlsParameters(identifiers);
+        generateAllConfigOptionParameters(identifiers, anvilContextId);
+        return identifiers;
+    }
+
+    public void generateAllTlsParameters(List<ParameterIdentifier> identifiers) {
         for (TlsParameterType listed : TlsParameterType.values()) {
             if (listed != BIT_POSITION) {
                 ParameterIdentifier identifierToAdd = new ParameterIdentifier(listed);
@@ -52,18 +59,35 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
                 }
             }
         }
+    }
+
+    private void generateAllConfigOptionParameters(
+            List<ParameterIdentifier> identifiers, String anvilContextId) {
 
         for (ConfigOptionParameterType listed : ConfigOptionParameterType.values()) {
             if (listed == ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER) {
                 identifiers.add(new ParameterIdentifier(listed, ParameterScope.NO_SCOPE));
+            } else if (listed == ConfigOptionParameterType.COMMON_BUILD_FLAG) {
+                if (TestContextRegistry.getContext(anvilContextId)
+                                .getConfigurationOptionsExtension()
+                        != null) {
+                    // upon the first iteration, the config option mappings may not have been
+                    // initialized yet
+                    ConfigurationOptionsConfig coConfig =
+                            TestContextRegistry.getContext(anvilContextId)
+                                    .getConfigurationOptionsExtension()
+                                    .getConfig();
+                    if (coConfig != null) {
+                        // all common options will be added under distinct scopes
+                        identifiers.addAll(coConfig.getEnabledConfigOptionDerivations());
+                    }
+                }
             } else {
                 // all CO types except for the compound parameter are used in a separate IPM
                 identifiers.add(
                         new ParameterIdentifier(listed, ConfigOptionParameterScope.DEFAULT));
             }
         }
-
-        return identifiers;
     }
 
     @Override
