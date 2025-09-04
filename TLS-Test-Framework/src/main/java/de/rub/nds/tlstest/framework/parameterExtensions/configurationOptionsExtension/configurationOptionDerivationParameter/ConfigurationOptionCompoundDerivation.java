@@ -24,7 +24,6 @@ import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -186,13 +185,13 @@ public class ConfigurationOptionCompoundDerivation
                 derivationScope.getIpmLimitations().stream()
                         .map(ParameterIdentifier::getParameterType)
                         .collect(Collectors.toSet());
-        List<List<ConfigurationOptionDerivationParameter>> setupList = TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
+        List<List<ConfigurationOptionDerivationParameter>> setupList =
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
                         .getConfigurationOptionsExtension()
                         .getDerivationManager()
                         .getCompoundSetupList();
         if (setupList != null) {
-            for (List<ConfigurationOptionDerivationParameter> setup :
-                    setupList) {
+            for (List<ConfigurationOptionDerivationParameter> setup : setupList) {
                 List<ConfigurationOptionDerivationParameter> constrainedSetupList =
                         new LinkedList<>(setup);
                 // Scope Limitations (Set respective parameters to their default value)

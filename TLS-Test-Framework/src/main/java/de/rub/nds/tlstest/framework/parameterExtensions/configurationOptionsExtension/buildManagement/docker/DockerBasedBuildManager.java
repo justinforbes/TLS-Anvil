@@ -290,7 +290,7 @@ public class DockerBasedBuildManager {
      */
     protected Set<ConfigurationOptionDerivationParameter> getMaxFeatureOptionSet() {
         List<ParameterIdentifier> derivationIdentifiers =
-            testContext
+                testContext
                         .getConfigurationOptionsExtension()
                         .getDerivationManager()
                         .getAllActivatedCOTypes();

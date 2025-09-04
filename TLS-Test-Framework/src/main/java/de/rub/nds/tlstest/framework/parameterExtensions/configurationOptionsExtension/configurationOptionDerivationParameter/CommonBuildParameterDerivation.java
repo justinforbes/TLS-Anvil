@@ -5,10 +5,10 @@ import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlsattacker.core.config.Config;
+import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigOptionValueTranslation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FlagTranslation;
@@ -42,7 +42,10 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
     public List<DerivationParameter<Config, ConfigurationOptionValue>> getParameterValues(
             DerivationScope derivationScope) {
         ConfigurationOptionsConfig configOptionsConfig =
-                ConfigurationOptionsDerivationManager.getInstance().getConfigurationOptionsConfig();
+                TestContextRegistry.byExtensionContext(derivationScope.getExtensionContext())
+                        .getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getConfigurationOptionsConfig();
 
         List<DerivationParameter<Config, ConfigurationOptionValue>> parameterValues =
                 new LinkedList<>();

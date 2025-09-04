@@ -19,7 +19,6 @@ import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.execution.WorkflowRunner;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.CommonBuildParameterDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import de.rub.nds.tlstest.framework.testClasses.Tls12Test;
@@ -49,8 +48,8 @@ public class EnableCompressionDerivationVerify extends Tls12Test {
                 && CommonBuildParameterDerivation.isOptionListed(
                         "ENABLE_COMPRESSION",
                         context.getConfigurationOptionsExtension()
-                        .getDerivationManager()
-                        .getAllActivatedCOTypes())) {
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes())) {
             return ConditionEvaluationResult.enabled("");
         } else {
             return ConditionEvaluationResult.disabled(

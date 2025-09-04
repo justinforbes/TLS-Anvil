@@ -16,7 +16,6 @@ import de.rub.nds.tlsscanner.core.constants.TlsAnalyzedProperty;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.CommonBuildParameterDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import de.rub.nds.tlstest.framework.testClasses.Tls12Test;
@@ -40,8 +39,8 @@ public class DisablePskDerivationVerify extends Tls12Test {
                 && CommonBuildParameterDerivation.isOptionListed(
                         "DISABLE_PSK",
                         context.getConfigurationOptionsExtension()
-                        .getDerivationManager()
-                        .getAllActivatedCOTypes())) {
+                                .getDerivationManager()
+                                .getAllActivatedCOTypes())) {
             return ConditionEvaluationResult.enabled("");
         } else {
             return ConditionEvaluationResult.disabled(
