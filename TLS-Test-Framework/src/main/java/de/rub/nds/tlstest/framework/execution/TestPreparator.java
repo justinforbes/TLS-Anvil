@@ -530,9 +530,16 @@ public class TestPreparator {
 
         LOGGER.info("Starting preparation phase");
         String configurationOptionsConfigFile = tlsAnvilConfig.getConfigOptionsConfigFile();
+        ConfigurationOptionsExtension configurationOptionsExtension =
+                new ConfigurationOptionsExtension(testContext);
+        testContext.setConfigurationOptionsExtension(configurationOptionsExtension);
         if (!configurationOptionsConfigFile.isEmpty()) {
-            prepareCombinatorialBuildSetup();
+            LOGGER.info("Preparing configuration options environment");
+            configurationOptionsExtension.load(configurationOptionsExtension);
         } else {
+            configurationOptionsExtension
+                    .getDerivationManager()
+                    .setCompoundSetupList(new LinkedList<>());
             this.tlsAnvilConfig.createConfig();
             if (this.tlsAnvilConfig.getTestEndpointMode() == TestEndpointType.CLIENT) {
                 clientTestPreparation();
@@ -595,14 +602,6 @@ public class TestPreparator {
 
         LOGGER.info("Prepartion finished!");
         return startTestSuite;
-    }
-
-    private void prepareCombinatorialBuildSetup() {
-        LOGGER.info("Preparing configuration options environment");
-        ConfigurationOptionsExtension configurationOptionsExtension =
-                new ConfigurationOptionsExtension(testContext);
-        testContext.setConfigurationOptionsExtension(configurationOptionsExtension);
-        configurationOptionsExtension.load(configurationOptionsExtension);
     }
 
     private void logCommonDerivationValues() {

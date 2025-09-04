@@ -57,6 +57,7 @@ public class ConfigurationOptionsDerivationManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private ConfigurationOptionsConfig config;
     private List<List<ConfigurationOptionDerivationParameter>> compoundSetupList;
+
     private Map<List<ConfigurationOptionDerivationParameter>, FeatureExtractionResult>
             compoundFeatureExtractionResult;
 
@@ -293,5 +294,10 @@ public class ConfigurationOptionsDerivationManager {
 
     public List<List<ConfigurationOptionDerivationParameter>> getCompoundSetupList() {
         return compoundSetupList;
+    }
+
+    public void setCompoundSetupList(
+            List<List<ConfigurationOptionDerivationParameter>> compoundSetupList) {
+        this.compoundSetupList = compoundSetupList;
     }
 }
