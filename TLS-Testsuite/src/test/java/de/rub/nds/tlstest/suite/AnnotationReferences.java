@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import de.rub.nds.anvilcore.annotation.*;
 import de.rub.nds.anvilcore.junit.extension.MethodConditionExtension;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
+import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,6 +25,10 @@ public class AnnotationReferences {
     public void referencesMatchParameterIdentifiers() {
         List<ParameterIdentifier> knownTlsIdentifiers = new LinkedList<ParameterIdentifier>();
         new TlsParameterIdentifierProvider().generateAllTlsParameters(knownTlsIdentifiers);
+        knownTlsIdentifiers.add(
+                new ParameterIdentifier(
+                        ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER,
+                        ParameterScope.NO_SCOPE));
 
         List<String> knownIdentifierStrings =
                 knownTlsIdentifiers.stream()

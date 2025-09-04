@@ -63,12 +63,14 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
 
     private void generateAllConfigOptionParameters(
             List<ParameterIdentifier> identifiers, String anvilContextId) {
-        if (TestContextRegistry.getContext(anvilContextId).getConfigurationOptionsExtension()
-                != null) {
-            for (ConfigOptionParameterType listed : ConfigOptionParameterType.values()) {
-                if (listed == ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER) {
-                    identifiers.add(new ParameterIdentifier(listed, ParameterScope.NO_SCOPE));
-                } else if (listed == ConfigOptionParameterType.COMMON_BUILD_FLAG) {
+
+        for (ConfigOptionParameterType listed : ConfigOptionParameterType.values()) {
+            if (listed == ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER) {
+                identifiers.add(new ParameterIdentifier(listed, ParameterScope.NO_SCOPE));
+            } else if (listed == ConfigOptionParameterType.COMMON_BUILD_FLAG) {
+                if (TestContextRegistry.getContext(anvilContextId)
+                                .getConfigurationOptionsExtension()
+                        != null) {
                     // upon the first iteration, the config option mappings may not have been
                     // initialized yet
                     ConfigurationOptionsConfig coConfig =
@@ -79,11 +81,11 @@ public class TlsParameterIdentifierProvider extends ParameterIdentifierProvider 
                         // all common options will be added under distinct scopes
                         identifiers.addAll(coConfig.getEnabledConfigOptionDerivations());
                     }
-                } else {
-                    // all CO types except for the compound parameter are used in a separate IPM
-                    identifiers.add(
-                            new ParameterIdentifier(listed, ConfigOptionParameterScope.DEFAULT));
                 }
+            } else {
+                // all CO types except for the compound parameter are used in a separate IPM
+                identifiers.add(
+                        new ParameterIdentifier(listed, ConfigOptionParameterScope.DEFAULT));
             }
         }
     }

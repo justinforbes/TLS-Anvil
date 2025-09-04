@@ -37,9 +37,7 @@
 
         <!-- 1st Priority Options -->
         <optionEntry>
-            <!-- The derivation type exactly like in the enum:
-                 de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionDerivationType -->
-            <derivationType>ConfigOptionParameter:SEEDING_METHOD</derivationType>
+            <derivationType>CommonBuildParameter:SEEDING_METHOD</derivationType>
             <!-- Optional: Enables or disables the respective option. Disabled options are ignored. Default: true  -->
             <enabled>true</enabled>
             <!-- Defines how option values are translated to library specific build flags/values. How to process these

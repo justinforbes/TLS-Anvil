@@ -53,7 +53,7 @@ public class ConfigurationOptionsConfigTest {
                                </valueTranslation>
                            </optionEntry>
                            <optionEntry>
-                               <derivationType>ConfigOptionParameter:SEEDING_METHOD</derivationType>"
+                               <derivationType>CommonBuildParameter:SEEDING_METHOD</derivationType>"
                                <valueTranslation type="SingleValueOption">
                                    <identifier>--with-rand-seed</identifier>
                                    <value key="OS_ENTROPY_SOURCE">os</value>
@@ -115,8 +115,8 @@ public class ConfigurationOptionsConfigTest {
                     config.getOptionsToTranslationMap()
                             .get(
                                     new ParameterIdentifier(
-                                            ConfigOptionParameterType.SEEDING_METHOD,
-                                            ConfigOptionParameterScope.DEFAULT));
+                                            ConfigOptionParameterType.COMMON_BUILD_FLAG,
+                                            new CommonBuildParameterScope("SEEDING_METHOD")));
             assertNotNull(translation);
             assertInstanceOf(SingleValueOptionTranslation.class, translation);
             SingleValueOptionTranslation singleTranslation =
