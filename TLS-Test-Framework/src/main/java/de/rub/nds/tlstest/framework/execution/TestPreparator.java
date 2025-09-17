@@ -79,29 +79,36 @@ public class TestPreparator {
     }
 
     /**
+     * Generate a cache file name based on the configuration. For client mode, uses a hash of the
+     * trigger script command. For server mode, uses the host and port.
+     *
+     * @param tlsAnvilConfig the TLS Anvil configuration
+     * @return the generated cache file name (without extension)
+     */
+    private static String generateCacheFileName(TlsAnvilConfig tlsAnvilConfig) {
+        if (tlsAnvilConfig.getTestEndpointMode() == TestEndpointType.CLIENT) {
+            return "client_"
+                    + HexFormat.of()
+                            .toHexDigits(
+                                    tlsAnvilConfig
+                                            .getTestClientDelegate()
+                                            .getTriggerScriptCommand()
+                                            .hashCode());
+        } else {
+            return tlsAnvilConfig.getTestServerDelegate().getExtractedHost()
+                    + "_"
+                    + tlsAnvilConfig.getTestServerDelegate().getExtractedPort();
+        }
+    }
+
+    /**
      * Save the supplied FeatureExtractionResult to the disk. Two files are created: a JavaObject
      * .ser and a readable .json file.
      *
      * @param report the FeatureExtractionResult created through TLS-Scanner
+     * @param fileName the base name for the cache files (without extension)
      */
-    private void saveToCache(FeatureExtractionResult report) {
-        String fileName;
-        if (tlsAnvilConfig.getTestEndpointMode() == TestEndpointType.CLIENT) {
-            fileName =
-                    "client_"
-                            + HexFormat.of()
-                                    .toHexDigits(
-                                            tlsAnvilConfig
-                                                    .getTestClientDelegate()
-                                                    .getTriggerScriptCommand()
-                                                    .hashCode());
-        } else {
-            fileName =
-                    tlsAnvilConfig.getTestServerDelegate().getExtractedHost()
-                            + "_"
-                            + tlsAnvilConfig.getTestServerDelegate().getExtractedPort();
-        }
-
+    public static void saveToCache(FeatureExtractionResult report, String fileName) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker());
@@ -121,45 +128,40 @@ public class TestPreparator {
     }
 
     /**
+     * Save the supplied FeatureExtractionResult to the disk. Two files are created: a JavaObject
+     * .ser and a readable .json file.
+     *
+     * @param report the FeatureExtractionResult created through TLS-Scanner
+     */
+    private void saveToCache(FeatureExtractionResult report) {
+        String fileName = generateCacheFileName(tlsAnvilConfig);
+        saveToCache(report, fileName);
+    }
+
+    /**
      * Returns a FeatureExtractionResult, if a corresponding file for the given configuration is
      * found on disk. Only the serialized Java-Object .ser file is used.
      *
+     * @param fileName the base name for the cache file (without extension)
+     * @param ignoreCache whether to ignore the cached file even if it exists
      * @return the FeatureExtractionResult or null, if not found
      */
-    private FeatureExtractionResult loadFromCache() {
-        String fileName;
-        if (tlsAnvilConfig.getTestEndpointMode() == TestEndpointType.CLIENT) {
-            fileName =
-                    "client_"
-                            + HexFormat.of()
-                                    .toHexDigits(
-                                            tlsAnvilConfig
-                                                    .getTestClientDelegate()
-                                                    .getTriggerScriptCommand()
-                                                    .hashCode());
-        } else {
-            fileName =
-                    tlsAnvilConfig.getTestServerDelegate().getExtractedHost()
-                            + "_"
-                            + tlsAnvilConfig.getTestServerDelegate().getExtractedPort();
-        }
-        fileName = fileName + ".ser";
-        File cachedFile = new File(Paths.get("cache", fileName).toString());
-        if (cachedFile.exists() && !tlsAnvilConfig.getAnvilTestConfig().isIgnoreCache()) {
+    public static FeatureExtractionResult loadFromCache(String fileName, boolean ignoreCache) {
+        String fullFileName = fileName + ".ser";
+        File cachedFile = new File(Paths.get("cache", fullFileName).toString());
+        if (cachedFile.exists() && !ignoreCache) {
             try {
                 FileInputStream fis = new FileInputStream(cachedFile);
                 ObjectInputStream ois = new ObjectInputStream(fis);
-                LOGGER.info("Reading cached ScanReport");
+                LOGGER.info("Found cached ScanReport");
                 return (FeatureExtractionResult) ois.readObject();
             } catch (InvalidClassException e) {
                 LOGGER.info("Cached SiteReport appears to be outdated");
             } catch (Exception e) {
-                LOGGER.error("Failed to load cached ScanReport {}", fileName, e);
+                LOGGER.error("Failed to load cached ScanReport {}", fullFileName, e);
             }
-        } else if (cachedFile.exists() && tlsAnvilConfig.getAnvilTestConfig().isIgnoreCache()) {
+        } else if (cachedFile.exists() && ignoreCache) {
             LOGGER.info("Ignoring cached ScanReport as configurated");
-        } else {
-            LOGGER.info("No matching ScanReport has been cached yet");
         }
 
         return null;
@@ -280,13 +282,15 @@ public class TestPreparator {
     private void serverTestPreparation() {
         waitForServer();
 
-        FeatureExtractionResult cachedReport = loadFromCache();
+        FeatureExtractionResult cachedReport =
+                loadFromCache(
+                        generateCacheFileName(tlsAnvilConfig),
+                        tlsAnvilConfig.getAnvilTestConfig().isIgnoreCache());
         if (cachedReport != null) {
             testContext.setFeatureExtractionResult(cachedReport);
             return;
         }
-
-        LOGGER.info("Server available, starting TLS-Scanner");
+        LOGGER.info("No matching ScanReport has been cached yet. Starting TLS-Scanner...");
 
         TlsServerScanner scanner =
                 getServerScanner(
@@ -366,7 +370,10 @@ public class TestPreparator {
         setGlobalClientTestCallbacks(preparedExecutor);
 
         ClientFeatureExtractionResult cachedReport =
-                (ClientFeatureExtractionResult) loadFromCache();
+                (ClientFeatureExtractionResult)
+                        loadFromCache(
+                                generateCacheFileName(tlsAnvilConfig),
+                                tlsAnvilConfig.getAnvilTestConfig().isIgnoreCache());
         if (cachedReport != null) {
             testContext.setFeatureExtractionResult(cachedReport);
             testContext.setReceivedClientHelloMessage(cachedReport.getReceivedClientHello());

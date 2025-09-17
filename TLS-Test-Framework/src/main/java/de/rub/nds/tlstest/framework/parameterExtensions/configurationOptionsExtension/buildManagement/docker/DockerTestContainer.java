@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class DockerTestContainer extends DockerContainer {
     private static final Logger LOGGER = LogManager.getLogger();
     protected Integer managerPort;
-    protected FeatureExtractionResult feaureExtractionResult;
+    protected FeatureExtractionResult featureExtractionResult;
     protected String dockerHost;
     protected int inUseCount;
     protected TestContext testContext;
@@ -61,7 +61,7 @@ public abstract class DockerTestContainer extends DockerContainer {
         super(dockerTag, containerId, dockerClient);
         this.dockerHost = dockerHost;
         this.managerPort = managerPort;
-        this.feaureExtractionResult = null;
+        this.featureExtractionResult = null;
         this.inUseCount = 0;
         this.testContext = testContext;
     }
@@ -185,7 +185,7 @@ public abstract class DockerTestContainer extends DockerContainer {
      * @return the containers TestSiteReport
      */
     public FeatureExtractionResult getFeatureExtractionResult() {
-        if (feaureExtractionResult == null) {
+        if (featureExtractionResult == null) {
             LOGGER.info("Create site report for container with tag '{}'...", this.dockerTag);
             DockerContainerState state = getContainerState();
             startUsage();
@@ -193,14 +193,14 @@ public abstract class DockerTestContainer extends DockerContainer {
             try {
                 if (state == DockerContainerState.PAUSED) {
                     unpauseAndWait();
-                    feaureExtractionResult = createFeatureExtractionResult(parallelExecutor);
+                    featureExtractionResult = createFeatureExtractionResult(parallelExecutor);
                     pause();
                 } else if (state == DockerContainerState.NOT_RUNNING) {
                     startAndWait();
-                    feaureExtractionResult = createFeatureExtractionResult(parallelExecutor);
+                    featureExtractionResult = createFeatureExtractionResult(parallelExecutor);
                     stop();
                 } else if (state == DockerContainerState.RUNNING) {
-                    feaureExtractionResult = createFeatureExtractionResult(parallelExecutor);
+                    featureExtractionResult = createFeatureExtractionResult(parallelExecutor);
                 } else {
                     throw new RuntimeException(
                             "Can't create SiteReport in invalid container state.");
@@ -212,7 +212,17 @@ public abstract class DockerTestContainer extends DockerContainer {
             }
             endUsage();
         }
-        return feaureExtractionResult;
+        return featureExtractionResult;
+    }
+
+    /**
+     * Sets the feature extraction result directly, useful for loading from cache. This prevents
+     * redundant feature extraction when a cached result is available.
+     *
+     * @param cachedResult the cached feature extraction result
+     */
+    public void setFeatureExtractionResult(FeatureExtractionResult cachedResult) {
+        this.featureExtractionResult = cachedResult;
     }
 
     /**
