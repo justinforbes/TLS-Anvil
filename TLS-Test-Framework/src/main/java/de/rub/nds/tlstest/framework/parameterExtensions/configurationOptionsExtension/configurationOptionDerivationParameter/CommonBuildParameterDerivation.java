@@ -1,7 +1,6 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter;
 
 import de.rub.nds.anvilcore.model.DerivationScope;
-import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
@@ -14,8 +13,6 @@ import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExte
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FlagTranslation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.SingleValueOptionTranslation;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,13 +100,6 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
         return new CommonBuildParameterDerivation(
                 selectedValue, getParameterIdentifier().getParameterScope());
     }
-
-    @Override
-    public List<ConditionalConstraint> getDefaultConditionalConstraints(
-            DerivationScope derivationScope) {
-        return new ArrayList<>();
-    }
-
 
     public static List<CommonBuildParameterScope> getCommonDerivationScopes(
             Collection<ParameterIdentifier> parameterIdentifiers) {

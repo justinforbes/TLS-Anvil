@@ -119,7 +119,7 @@ public class TestContextRegistry {
      * @param extensionContext the JUnit ExtensionContext
      * @return the context ID, or null if not found
      */
-    private static String getContextIdFromExtensionContext(ExtensionContext extensionContext) {
+    public static String getContextIdFromExtensionContext(ExtensionContext extensionContext) {
         return extensionContext
                 .getConfigurationParameter(TestRunner.CONTEXT_ID_PROPERTY)
                 .orElse(null);

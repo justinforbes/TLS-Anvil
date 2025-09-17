@@ -86,4 +86,6 @@ public abstract class ConfigurationOptionDerivationParameter
     public String jsonValue() {
         return getSelectedValue().toString();
     }
+
+    // Constraint logic is now handled by ConfigurationOptionCompoundDerivation
 }

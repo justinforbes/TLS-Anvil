@@ -330,6 +330,9 @@ public class ConfigurationOptionsConfig {
                                         XmlParseUtils.findElement(
                                                 optionEntry, "valueTranslation", true)));
 
+                // Parse feature constraints (if present)
+                parseFeatureConstraints(optionEntry, translation);
+
                 ParameterScope scopeToUse = null;
                 ParameterType typeToUse = null;
                 if (type.startsWith(CommonBuildParameterScope.SCOPE_IDENTIFIER + ":")) {
@@ -392,5 +395,115 @@ public class ConfigurationOptionsConfig {
 
     public TestContext getTestContext() {
         return testContext;
+    }
+
+    /**
+     * Returns all constraints defined for a specific configuration option.
+     *
+     * @param configOption The configuration option parameter identifier
+     * @return List of all constraints for this option, or empty list if none exist
+     */
+    public List<FeatureConstraint> getConstraintsForConfigOption(ParameterIdentifier configOption) {
+        ConfigOptionValueTranslation translation = optionsToTranslation.get(configOption);
+        if (translation == null) {
+            return new ArrayList<>();
+        }
+
+        if (translation instanceof FlagTranslation) {
+            return ((FlagTranslation) translation).getConstraints();
+        } else if (translation instanceof SingleValueOptionTranslation) {
+            return ((SingleValueOptionTranslation) translation).getConstraints();
+        }
+
+        return new ArrayList<>();
+    }
+
+    /** Parses feature constraints from an optionEntry element and adds them to the translation. */
+    private void parseFeatureConstraints(
+            Element optionEntry, ConfigOptionValueTranslation translation) {
+        Element featureConstraintsElement =
+                XmlParseUtils.findElement(optionEntry, "featureConstraints", false);
+        if (featureConstraintsElement == null) {
+            return; // No constraints defined
+        }
+
+        NodeList constraintList = featureConstraintsElement.getElementsByTagName("constraint");
+        for (int i = 0; i < constraintList.getLength(); i++) {
+            Node constraintNode = constraintList.item(i);
+            if (constraintNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element constraintElement = (Element) constraintNode;
+                FeatureConstraint constraint = parseIndividualConstraint(constraintElement);
+                addConstraintToTranslation(translation, constraint);
+            }
+        }
+    }
+
+    /** Parses an individual constraint element. */
+    private FeatureConstraint parseIndividualConstraint(Element constraintElement) {
+        // Parse parameter identifier
+        String parameterIdentifier =
+                Objects.requireNonNull(
+                                XmlParseUtils.findElement(
+                                        constraintElement, "parameterIdentifier", true))
+                        .getTextContent();
+
+        // Parse regex filter
+        String regexFilter =
+                Objects.requireNonNull(
+                                XmlParseUtils.findElement(constraintElement, "regexFilter", true))
+                        .getTextContent();
+
+        // Parse applicable values
+        Set<String> applicableValues = parseApplicableValues(constraintElement);
+
+        return new FeatureConstraint(parameterIdentifier, regexFilter, applicableValues);
+    }
+
+    /**
+     * Parses the applyFor section to determine which configuration values this constraint applies
+     * to.
+     */
+    private Set<String> parseApplicableValues(Element constraintElement) {
+        Set<String> applicableValues = new HashSet<>();
+
+        Element applyForElement =
+                Objects.requireNonNull(
+                        XmlParseUtils.findElement(constraintElement, "applyFor", true));
+
+        // Check for flag values
+        Element flagValueElement = XmlParseUtils.findElement(applyForElement, "flagValue", false);
+        if (flagValueElement != null) {
+            applicableValues.add(flagValueElement.getTextContent());
+        }
+
+        // Check for option values
+        NodeList optionValueList = applyForElement.getElementsByTagName("optionValue");
+        for (int i = 0; i < optionValueList.getLength(); i++) {
+            Node optionValueNode = optionValueList.item(i);
+            if (optionValueNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element optionValueElement = (Element) optionValueNode;
+                applicableValues.add(optionValueElement.getTextContent());
+            }
+        }
+
+        if (applicableValues.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Constraint applyFor section must contain at least one flagValue or optionValue");
+        }
+
+        return applicableValues;
+    }
+
+    /** Adds a constraint to the appropriate translation object. */
+    private void addConstraintToTranslation(
+            ConfigOptionValueTranslation translation, FeatureConstraint constraint) {
+        if (translation instanceof FlagTranslation) {
+            ((FlagTranslation) translation).addConstraint(constraint);
+        } else if (translation instanceof SingleValueOptionTranslation) {
+            ((SingleValueOptionTranslation) translation).addConstraint(constraint);
+        } else {
+            throw new IllegalArgumentException(
+                    "Unsupported translation type for constraints: " + translation.getClass());
+        }
     }
 }

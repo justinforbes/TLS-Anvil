@@ -11,6 +11,7 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.model.DerivationScope;
 import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
@@ -24,6 +25,8 @@ import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FeatureConstraint;
 import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -98,7 +101,99 @@ public class ConfigurationOptionCompoundDerivation
     public List<ConditionalConstraint> getDefaultConditionalConstraints(DerivationScope scope) {
         List<ConditionalConstraint> condConstraints = new LinkedList<>();
         condConstraints.add(getWeakCipherSuitesMustBeEnabledToBeUsedConstraint());
+        condConstraints.addAll(getRegexFilterConstraints(scope));
         return condConstraints;
+    }
+
+    /**
+     * Creates regex filter constraints for all parameter types that have constraints defined for
+     * any configuration option in the current setup.
+     */
+    private List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
+        List<ConditionalConstraint> constraints = new LinkedList<>();
+
+        // Get the configuration options config
+        ConfigurationOptionsConfig configOptionsConfig =
+                TestContextRegistry.byExtensionContext(scope.getExtensionContext())
+                        .getConfigurationOptionsExtension()
+                        .getDerivationManager()
+                        .getConfigurationOptionsConfig();
+
+        if (configOptionsConfig == null) {
+            return constraints;
+        }
+
+        // Collect all parameter identifiers that have constraints defined
+        Set<String> constrainedParameterIdentifiers = new HashSet<>();
+        for (List<ConfigurationOptionDerivationParameter> setup : configOptionsSetupsList) {
+            for (ConfigurationOptionDerivationParameter configParam : setup) {
+                List<FeatureConstraint> paramConstraints =
+                        configOptionsConfig.getConstraintsForConfigOption(
+                                configParam.getParameterIdentifier());
+                for (FeatureConstraint constraint : paramConstraints) {
+                    constrainedParameterIdentifiers.add(constraint.getParameterIdentifier());
+                }
+            }
+        }
+
+        // Create constraints for each parameter type that has constraints defined
+        for (String paramIdentifier : constrainedParameterIdentifiers) {
+            ParameterIdentifier targetParameterIdentifier =
+                    ParameterIdentifier.fromName(
+                            paramIdentifier,
+                            AnvilContextRegistry.getContext(
+                                    TestContextRegistry.getContextIdFromExtensionContext(
+                                            scope.getExtensionContext())));
+            constraints.add(
+                    createRegexFilterConstraint(targetParameterIdentifier, configOptionsConfig));
+        }
+
+        return constraints;
+    }
+
+    /**
+     * Creates a regex filter constraint for a target parameter. The constraint checks if any
+     * configuration option in the current setup triggers feature constraints for the target
+     * parameter.
+     */
+    private ConditionalConstraint createRegexFilterConstraint(
+            ParameterIdentifier targetParameterIdentifier,
+            ConfigurationOptionsConfig configOptionsConfig) {
+        Set<ParameterIdentifier> requiredDerivations = new HashSet<>();
+        requiredDerivations.add(targetParameterIdentifier);
+        requiredDerivations.add(
+                new ParameterIdentifier(
+                        ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER));
+
+        return new ConditionalConstraint(
+                requiredDerivations,
+                ConstraintBuilder.constrain(
+                                ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER.name(),
+                                targetParameterIdentifier.getParameterType().toString())
+                        .by(
+                                (ConfigurationOptionCompoundDerivation compoundDerivation,
+                                        DerivationParameter targetParam) -> {
+
+                                    // For all options of a setup, check if constraint applies to
+                                    // value of option and check if regex matches
+                                    for (ConfigurationOptionDerivationParameter coEntry :
+                                            compoundDerivation.getSelectedValue()) {
+                                        for (FeatureConstraint constraint :
+                                                configOptionsConfig.getConstraintsForConfigOption(
+                                                        coEntry.getParameterIdentifier())) {
+                                            if (constraint.appliesForValue(
+                                                    coEntry.getSelectedValue().toString())) {
+                                                String regex = constraint.getRegexFilter();
+                                                String targetValue =
+                                                        targetParam.getSelectedValue().toString();
+                                                if (regex != null && targetValue.matches(regex)) {
+                                                    return false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return true;
+                                }));
     }
 
     private boolean isWeakCiphersuite(CipherSuite cipherSuite) {

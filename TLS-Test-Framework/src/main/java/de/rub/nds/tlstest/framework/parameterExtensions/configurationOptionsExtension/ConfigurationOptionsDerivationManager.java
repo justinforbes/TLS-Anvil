@@ -278,7 +278,8 @@ public class ConfigurationOptionsDerivationManager {
             try {
                 FeatureExtractionResult featureExtractionResult =
                         setupToFuture.getValue().get().call();
-                ConfigurationOptionsExtension.logContainerFeatures(setupToFuture.getKey().toString(), featureExtractionResult);
+                ConfigurationOptionsExtension.logContainerFeatures(
+                        setupToFuture.getKey().toString(), featureExtractionResult);
                 compoundFeatureExtractionResult.put(
                         setupToFuture.getKey(), featureExtractionResult);
                 successfulSetups.add(setupToFuture.getKey());
