@@ -74,6 +74,7 @@ public class ConfigurationOptionsExtension {
 
         FeatureExtractionResult maxFeatureExtractionResult =
                 config.getBuildManager().getMaximalFeatureExtractionResult();
+        logContainerFeatures("richest configuration", maxFeatureExtractionResult);
         testContext.setFeatureExtractionResult(maxFeatureExtractionResult);
     }
 
@@ -91,5 +92,16 @@ public class ConfigurationOptionsExtension {
 
     public ConfigurationOptionsDerivationManager getDerivationManager() {
         return derivationManager;
+    }
+
+    public static void logContainerFeatures(
+            String identifier, FeatureExtractionResult featureExtractionResult) {
+        LOGGER.info(
+                "Container ({}) offers {} versions, {} cipher suites, {} named groups, {} TLS 1.3 groups",
+                identifier,
+                featureExtractionResult.getSupportedVersions().size(),
+                featureExtractionResult.getSupportedCipherSuites().size(),
+                featureExtractionResult.getSupportedNamedGroups().size(),
+                featureExtractionResult.getSupportedTls13Groups().size());
     }
 }

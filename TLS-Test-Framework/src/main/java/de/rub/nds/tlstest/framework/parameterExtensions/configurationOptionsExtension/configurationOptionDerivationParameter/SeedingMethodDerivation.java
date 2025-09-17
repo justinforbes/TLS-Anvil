@@ -15,6 +15,7 @@ import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import java.util.*;
 
 public class SeedingMethodDerivation extends ConfigurationOptionDerivationParameter {
@@ -77,5 +78,11 @@ public class SeedingMethodDerivation extends ConfigurationOptionDerivationParame
     protected DerivationParameter<Config, ConfigurationOptionValue> generateValue(
             ConfigurationOptionValue selectedValue) {
         return new SeedingMethodDerivation(selectedValue);
+    }
+
+    @Override
+    public List<DerivationParameter<Config, ConfigurationOptionValue>> getParameterValuesForConfig(
+            ConfigurationOptionsConfig configOptionsConfig) {
+        return getParameterValues(null);
     }
 }

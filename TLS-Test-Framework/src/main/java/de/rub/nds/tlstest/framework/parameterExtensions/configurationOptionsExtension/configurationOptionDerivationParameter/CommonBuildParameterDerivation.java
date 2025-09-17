@@ -1,6 +1,7 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter;
 
 import de.rub.nds.anvilcore.model.DerivationScope;
+import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
@@ -13,6 +14,8 @@ import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExte
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FlagTranslation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.SingleValueOptionTranslation;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +49,16 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
                         .getConfigurationOptionsExtension()
                         .getDerivationManager()
                         .getConfigurationOptionsConfig();
+        return getParameterValuesForConfig(configOptionsConfig);
+    }
 
+    // For build flags, we use a separate IPM instanciated without ties to any specific test
+    // template.
+    // Hence, when collecting the parameters, a derivation scope may not always be present to
+    // determine which config we need to use.
+    @Override
+    public List<DerivationParameter<Config, ConfigurationOptionValue>> getParameterValuesForConfig(
+            ConfigurationOptionsConfig configOptionsConfig) {
         List<DerivationParameter<Config, ConfigurationOptionValue>> parameterValues =
                 new LinkedList<>();
         ConfigOptionValueTranslation translation =
@@ -91,6 +103,13 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
         return new CommonBuildParameterDerivation(
                 selectedValue, getParameterIdentifier().getParameterScope());
     }
+
+    @Override
+    public List<ConditionalConstraint> getDefaultConditionalConstraints(
+            DerivationScope derivationScope) {
+        return new ArrayList<>();
+    }
+
 
     public static List<CommonBuildParameterScope> getCommonDerivationScopes(
             Collection<ParameterIdentifier> parameterIdentifiers) {

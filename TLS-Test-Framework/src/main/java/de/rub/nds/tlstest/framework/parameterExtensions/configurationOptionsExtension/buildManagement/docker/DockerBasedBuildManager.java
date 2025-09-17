@@ -298,7 +298,9 @@ public class DockerBasedBuildManager {
         for (ParameterIdentifier identifier : derivationIdentifiers) {
             ConfigurationOptionDerivationParameter configOptionDerivation =
                     (ConfigurationOptionDerivationParameter) identifier.getInstance();
-            optionSet.add(configOptionDerivation.getMaxFeatureValueParameter());
+            optionSet.add(
+                    configOptionDerivation.getMaxFeatureValueParameter(
+                            testContext.getConfigurationOptionsExtension().getConfig()));
         }
         return optionSet;
     }
@@ -452,7 +454,7 @@ public class DockerBasedBuildManager {
      * these maximal feature builds.
      */
     private synchronized void configDefaultConnection() {
-
+        LOGGER.info("Preparing container with richest feature set.");
         if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
             TestCOMultiClientDelegate delegate = new TestCOMultiClientDelegate();
             testContext.getConfig().setTestClientDelegate(delegate);

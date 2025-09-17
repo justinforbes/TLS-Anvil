@@ -31,6 +31,14 @@ import de.rwth.swc.coffee4j.model.Parameter;
 import de.rwth.swc.coffee4j.model.Value;
 import de.rwth.swc.coffee4j.model.converter.IndexBasedModelConverter;
 import de.rwth.swc.coffee4j.model.converter.ModelConverter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -113,6 +121,21 @@ public class ConfigurationOptionsDerivationManager {
 
     private void initCompoundParameterSetup() {
         compoundSetupList = new LinkedList<>();
+
+        // Try to load from cache file first
+        Path cacheFile = Paths.get(config.getCompoundOptionsFile());
+        if (Files.exists(cacheFile)) {
+            if (loadCompoundSetupFromCache(cacheFile)) {
+                LOGGER.info(
+                        "Loaded {} configuration option combinations from cache file: {}.",
+                        compoundSetupList.size(),
+                        config.getCompoundOptionsFile());
+                return;
+            } else {
+                LOGGER.warn("Failed to load cache file, generating new compound parameter setup.");
+            }
+        }
+
         int strength = config.getConfigOptionsIpmStrength();
 
         // -- Create the IPM of coffee4j
@@ -125,7 +148,7 @@ public class ConfigurationOptionsDerivationManager {
             // DerivationScopes are bound to test templates but this selection happens idependently
             // of any test template so we use null
             List<DerivationParameter<Config, ConfigurationOptionValue>> derivationParameterValues =
-                    coDerivationParameter.getParameterValues(null);
+                    coDerivationParameter.getParameterValuesForConfig(config);
             // - Add values
             List<Value> values = new LinkedList<>();
             for (int idx = 0; idx < derivationParameterValues.size(); idx++) {
@@ -199,6 +222,9 @@ public class ConfigurationOptionsDerivationManager {
         compoundSetupList = Collections.unmodifiableList(compoundSetupList);
 
         LOGGER.info("Compiled {} configuration option combinations.", compoundSetupList.size());
+
+        // Save to cache file
+        saveCompoundSetupToCache(cacheFile);
     }
 
     public void preBuildAndValidateAndFilterSetups() {
@@ -252,7 +278,7 @@ public class ConfigurationOptionsDerivationManager {
             try {
                 FeatureExtractionResult featureExtractionResult =
                         setupToFuture.getValue().get().call();
-
+                ConfigurationOptionsExtension.logContainerFeatures(setupToFuture.getKey().toString(), featureExtractionResult);
                 compoundFeatureExtractionResult.put(
                         setupToFuture.getKey(), featureExtractionResult);
                 successfulSetups.add(setupToFuture.getKey());
@@ -290,6 +316,93 @@ public class ConfigurationOptionsDerivationManager {
                             coBuildManager.getDockerTagToContainerInfoMap().get(containerTag);
                     return new DockerBasedBuildManager.FeatureExtractionCallback(testContainer);
                 });
+    }
+
+    private boolean loadCompoundSetupFromCache(Path cacheFile) {
+        List<List<ConfigurationOptionDerivationParameter>> loadedSetups = new LinkedList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(cacheFile.toFile()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                List<ConfigurationOptionDerivationParameter> parameterCombinationList =
+                        new LinkedList<>();
+                String[] cachedEntries = line.split(",");
+
+                // Parse each cached entry (format: "parameterIdentifier=value")
+                for (String cachedEntry : cachedEntries) {
+                    String[] parts = cachedEntry.trim().split("=", 2);
+                    if (parts.length != 2) {
+                        LOGGER.warn(
+                                "Was unable to process cached compund setup entry {}. Expected identifier=value syntax.",
+                                cachedEntry);
+                        continue; // Skip malformed entries
+                    }
+
+                    String parameterIdentifierStr = parts[0];
+                    String valueStr = parts[1];
+
+                    // Find the matching parameter identifier
+                    ParameterIdentifier matchingIdentifier = null;
+                    for (ParameterIdentifier coIdentifier :
+                            config.getEnabledConfigOptionDerivations()) {
+                        if (coIdentifier.toString().equals(parameterIdentifierStr)) {
+                            matchingIdentifier = coIdentifier;
+                            break;
+                        }
+                    }
+
+                    if (matchingIdentifier != null) {
+                        ConfigurationOptionDerivationParameter coDerivationParameter =
+                                (ConfigurationOptionDerivationParameter)
+                                        matchingIdentifier.getInstance();
+                        List<DerivationParameter<Config, ConfigurationOptionValue>>
+                                derivationParameterValues =
+                                        coDerivationParameter.getParameterValuesForConfig(config);
+
+                        // Find matching parameter based on selected value string
+                        for (DerivationParameter<Config, ConfigurationOptionValue> paramValue :
+                                derivationParameterValues) {
+                            if (paramValue.getSelectedValue().toString().equals(valueStr)) {
+                                parameterCombinationList.add(
+                                        (ConfigurationOptionDerivationParameter) paramValue);
+                                break;
+                            }
+                        }
+                    }
+                }
+                loadedSetups.add(parameterCombinationList);
+            }
+            compoundSetupList = loadedSetups;
+            return !compoundSetupList.isEmpty();
+        } catch (IOException e) {
+            LOGGER.error("Error loading compound setup from cache file: {}", cacheFile, e);
+            return false;
+        }
+    }
+
+    private void saveCompoundSetupToCache(Path cacheFile) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(cacheFile.toFile()))) {
+            for (List<ConfigurationOptionDerivationParameter> setup : compoundSetupList) {
+                List<String> selectedValues = new ArrayList<>();
+                for (ConfigurationOptionDerivationParameter param : setup) {
+                    selectedValues.add(
+                            param.getParameterIdentifier()
+                                    + "="
+                                    + param.getSelectedValue().toString());
+                }
+                writer.write(String.join(",", selectedValues));
+                writer.newLine();
+            }
+            LOGGER.info(
+                    "Saved {} configuration option combinations to cache file: {}.",
+                    compoundSetupList.size(),
+                    config.getCompoundOptionsFile());
+        } catch (IOException e) {
+            LOGGER.error("Error saving compound setup to cache file: {}", cacheFile, e);
+        }
     }
 
     public List<List<ConfigurationOptionDerivationParameter>> getCompoundSetupList() {

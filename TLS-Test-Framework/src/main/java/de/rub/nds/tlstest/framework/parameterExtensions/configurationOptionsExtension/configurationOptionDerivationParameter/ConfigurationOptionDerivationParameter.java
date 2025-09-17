@@ -18,6 +18,7 @@ import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import java.util.List;
 
 public abstract class ConfigurationOptionDerivationParameter
@@ -46,9 +47,10 @@ public abstract class ConfigurationOptionDerivationParameter
      *
      * @return the option value resulting int the most feature-rich library build
      */
-    public ConfigurationOptionValue getMaxFeatureValue() {
+    public ConfigurationOptionValue getMaxFeatureValue(
+            ConfigurationOptionsConfig configOptionsConfig) {
         List<DerivationParameter<Config, ConfigurationOptionValue>> parameterValues =
-                getParameterValues(null);
+                getParameterValuesForConfig(configOptionsConfig);
         return parameterValues.stream()
                 .filter(parameter -> parameter.getSelectedValue().isRichestConfiguration())
                 .findFirst()
@@ -67,12 +69,17 @@ public abstract class ConfigurationOptionDerivationParameter
         return new ConfigurationOptionValue(false, true);
     }
 
+    public abstract List<DerivationParameter<Config, ConfigurationOptionValue>>
+            getParameterValuesForConfig(ConfigurationOptionsConfig configOptionsConfig);
+
     public ConfigurationOptionDerivationParameter getDefaultValueParameter() {
         return (ConfigurationOptionDerivationParameter) generateValue(getDefaultValue());
     }
 
-    public ConfigurationOptionDerivationParameter getMaxFeatureValueParameter() {
-        return (ConfigurationOptionDerivationParameter) generateValue(getMaxFeatureValue());
+    public ConfigurationOptionDerivationParameter getMaxFeatureValueParameter(
+            ConfigurationOptionsConfig configOptionsConfig) {
+        return (ConfigurationOptionDerivationParameter)
+                generateValue(getMaxFeatureValue(configOptionsConfig));
     }
 
     @JsonValue

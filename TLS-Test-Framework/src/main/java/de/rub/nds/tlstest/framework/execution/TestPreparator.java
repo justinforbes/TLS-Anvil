@@ -535,7 +535,7 @@ public class TestPreparator {
         testContext.setConfigurationOptionsExtension(configurationOptionsExtension);
         if (!configurationOptionsConfigFile.isEmpty()) {
             LOGGER.info("Preparing configuration options environment");
-            configurationOptionsExtension.load(configurationOptionsExtension);
+            configurationOptionsExtension.load(configurationOptionsConfigFile);
         } else {
             configurationOptionsExtension
                     .getDerivationManager()

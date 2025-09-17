@@ -69,6 +69,8 @@ public class ConfigurationOptionsConfig {
      */
     private int maxRunningContainerShutdowns; // default 8
 
+    private String compoundOptionsFile; // default "compoundOptions.cache"
+
     // Docker Config (not required, but necessary for build managers that work with docker)
     private boolean dockerConfigPresent;
 
@@ -86,13 +88,14 @@ public class ConfigurationOptionsConfig {
     private static final int DEFAULT_SIMULTANEOUS_BUILDS = 1;
     private static final int DEFAULT_MAX_RUNNING_CONTAINERS = 16;
     private static final int DEFAULT_MAX_RUNNING_SHUTDOWN_CONTAINERS = 8;
+    private static final String DEFAULT_COMPOUND_OPTIONS_FILE = "compoundOptions.cache";
 
     public ConfigurationOptionsConfig(Path configFilePath, TestContext testContext)
             throws FileNotFoundException {
+        this.testContext = testContext;
         optionsToTranslation = new HashMap<>();
         parseConfigFile(new FileInputStream(configFilePath.toFile()));
         buildManager = new DockerBasedBuildManager(this, new DockerFactory(this), testContext);
-        this.testContext = testContext;
     }
 
     public ConfigurationOptionsConfig(InputStream inputStream, TestContext testContext) {
@@ -154,6 +157,10 @@ public class ConfigurationOptionsConfig {
         return maxRunningContainerShutdowns;
     }
 
+    public String getCompoundOptionsFile() {
+        return compoundOptionsFile;
+    }
+
     private void parseConfigFile(InputStream inputStream) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -174,6 +181,7 @@ public class ConfigurationOptionsConfig {
             parseAndConfigureMaxRunningContainers(rootElement);
             parseAndConfigureMaxSimultaneousBuilds(rootElement);
             parseAndConfigureMaxRunningContainerShutdowns(rootElement);
+            parseAndConfigureCompoundOptionsFile(rootElement);
             parseAndConfigureOptionsToTest(rootElement);
         } catch (IOException | SAXException | ParserConfigurationException e) {
             e.printStackTrace();
@@ -236,6 +244,16 @@ public class ConfigurationOptionsConfig {
                     Integer.parseInt(maxRunningContainersElement.getTextContent());
         } else {
             maxRunningContainerShutdowns = DEFAULT_MAX_RUNNING_SHUTDOWN_CONTAINERS;
+        }
+    }
+
+    private void parseAndConfigureCompoundOptionsFile(Element rootElement) {
+        Element compoundOptionsElement =
+                XmlParseUtils.findElement(rootElement, "compoundOptions", false);
+        if (compoundOptionsElement != null) {
+            compoundOptionsFile = compoundOptionsElement.getTextContent();
+        } else {
+            compoundOptionsFile = DEFAULT_COMPOUND_OPTIONS_FILE;
         }
     }
 
