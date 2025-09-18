@@ -34,6 +34,7 @@ public class ConfigurationOptionValue {
     public ConfigurationOptionValue(boolean flagValue, boolean isRichestConfiguration) {
         this.isFlag = true;
         this.optionIsSet = flagValue;
+        this.isRichestConfiguration = isRichestConfiguration;
     }
 
     /**

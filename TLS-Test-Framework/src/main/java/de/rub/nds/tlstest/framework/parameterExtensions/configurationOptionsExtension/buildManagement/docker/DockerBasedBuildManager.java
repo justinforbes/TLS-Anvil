@@ -297,6 +297,14 @@ public class DockerBasedBuildManager {
                     configOptionDerivation.getMaxFeatureValueParameter(
                             testContext.getConfigurationOptionsExtension().getConfig()));
         }
+        LOGGER.info("Max feature build:");
+        for (ConfigurationOptionDerivationParameter param : optionSet) {
+            LOGGER.info(
+                    "{} with flag val {}",
+                    param.getParameterIdentifier().name(),
+                    param.getSelectedValue().toString());
+        }
+        LOGGER.info("-------------------------");
         return optionSet;
     }
 
