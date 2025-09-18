@@ -21,8 +21,10 @@ import de.rub.nds.tlstest.framework.anvil.TlsParameterIdentifierProvider;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.docker.DockerBasedBuildManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.docker.DockerFactory;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -504,6 +506,69 @@ public class ConfigurationOptionsConfig {
         } else {
             throw new IllegalArgumentException(
                     "Unsupported translation type for constraints: " + translation.getClass());
+        }
+    }
+
+    /**
+     * Translates a given configuration option to a tls library specific string.
+     *
+     * @param optionParameter - the configuration option to translate (including its set value)
+     * @return the translated string
+     */
+    public String translateOptionValue(ConfigurationOptionDerivationParameter optionParameter) {
+        ConfigurationOptionValue value = optionParameter.getSelectedValue();
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    "Passed option parameter has no selected value yet.");
+        }
+        ParameterIdentifier parameterIdentifier = optionParameter.getParameterIdentifier();
+        if (!(parameterIdentifier.getParameterType() instanceof ConfigOptionParameterType)) {
+            throw new IllegalArgumentException(
+                    "Passed derivation parameter is not of type ConfigOptionDerivationType.");
+        }
+
+        if (!optionsToTranslation.containsKey(parameterIdentifier)) {
+            throw new IllegalStateException(
+                    "The ConfigurationOptionsConfig's translation map does not contain the passed type");
+        }
+
+        ConfigOptionValueTranslation translation = optionsToTranslation.get(parameterIdentifier);
+
+        if (translation instanceof FlagTranslation) {
+            FlagTranslation flagTranslation = (FlagTranslation) translation;
+            if (!value.isFlag()) {
+                throw new IllegalStateException(
+                        "The ConfigurationOptionsConfig's translation is a flag, but the ConfigurationOptionValue isn't. Value can't be translated.");
+            }
+
+            if (value.isOptionSet()) {
+                return flagTranslation.getDataIfSet();
+            } else {
+                return flagTranslation.getDataIfNotSet();
+            }
+        } else if (translation instanceof SingleValueOptionTranslation) {
+            SingleValueOptionTranslation singleValueTranslation =
+                    (SingleValueOptionTranslation) translation;
+            if (value.isFlag()) {
+                throw new IllegalStateException(
+                        "The ConfigurationOptionsConfig's translation has a value, but the ConfigurationOptionValue is a flag. Value can't be translated.");
+            }
+            List<String> optionValues = value.getOptionValues();
+            if (optionValues.size() != 1) {
+                throw new IllegalStateException(
+                        "The ConfigurationOptionsConfig's translation has a single value, but the ConfigurationOptionValue is not a single value. Value can't be translated.");
+            }
+            String optionValue = optionValues.get(0);
+
+            String translatedName = singleValueTranslation.getIdentifier();
+            String translatedValue = singleValueTranslation.getValueTranslation(optionValue);
+
+            return String.format("%s=%s", translatedName, translatedValue);
+        } else {
+            throw new UnsupportedOperationException(
+                    String.format(
+                            "The DockerBasedBuildManager does not support translations '%s'.",
+                            translation.getClass()));
         }
     }
 }

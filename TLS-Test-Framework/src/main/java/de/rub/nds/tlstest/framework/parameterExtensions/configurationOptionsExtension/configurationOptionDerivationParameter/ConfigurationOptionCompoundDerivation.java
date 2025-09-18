@@ -24,7 +24,9 @@ import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FeatureConstraint;
 import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
@@ -112,20 +114,17 @@ public class ConfigurationOptionCompoundDerivation
     private List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
         List<ConditionalConstraint> constraints = new LinkedList<>();
 
-        // Get the configuration options config
-        ConfigurationOptionsConfig configOptionsConfig =
+        ConfigurationOptionsDerivationManager coManager =
                 TestContextRegistry.byExtensionContext(scope.getExtensionContext())
                         .getConfigurationOptionsExtension()
-                        .getDerivationManager()
-                        .getConfigurationOptionsConfig();
-
-        if (configOptionsConfig == null) {
-            return constraints;
-        }
+                        .getDerivationManager();
+        // Get the configuration options config
+        ConfigurationOptionsConfig configOptionsConfig = coManager.getConfigurationOptionsConfig();
 
         // Collect all parameter identifiers that have constraints defined
         Set<String> constrainedParameterIdentifiers = new HashSet<>();
-        for (List<ConfigurationOptionDerivationParameter> setup : configOptionsSetupsList) {
+        for (List<ConfigurationOptionDerivationParameter> setup :
+                coManager.getCompoundSetupList()) {
             for (ConfigurationOptionDerivationParameter configParam : setup) {
                 List<FeatureConstraint> paramConstraints =
                         configOptionsConfig.getConstraintsForConfigOption(
@@ -144,8 +143,14 @@ public class ConfigurationOptionCompoundDerivation
                             AnvilContextRegistry.getContext(
                                     TestContextRegistry.getContextIdFromExtensionContext(
                                             scope.getExtensionContext())));
-            constraints.add(
-                    createRegexFilterConstraint(targetParameterIdentifier, configOptionsConfig));
+            // CO Flag Constraints are handled separately since they must be applied when building
+            // the isolated CO IPM
+            if (!(targetParameterIdentifier.getParameterScope()
+                    instanceof CommonBuildParameterScope)) {
+                constraints.add(
+                        createRegexFilterConstraint(
+                                targetParameterIdentifier, configOptionsConfig));
+            }
         }
 
         return constraints;
@@ -181,8 +186,14 @@ public class ConfigurationOptionCompoundDerivation
                                         for (FeatureConstraint constraint :
                                                 configOptionsConfig.getConstraintsForConfigOption(
                                                         coEntry.getParameterIdentifier())) {
-                                            if (constraint.appliesForValue(
-                                                    coEntry.getSelectedValue().toString())) {
+                                            String valueString =
+                                                    coEntry.getSelectedValue().toString();
+                                            if (coEntry.getSelectedValue().isFlag()) {
+                                                valueString =
+                                                        configOptionsConfig.translateOptionValue(
+                                                                coEntry);
+                                            }
+                                            if (constraint.appliesForValue(valueString)) {
                                                 String regex = constraint.getRegexFilter();
                                                 String targetValue =
                                                         targetParam.getSelectedValue().toString();

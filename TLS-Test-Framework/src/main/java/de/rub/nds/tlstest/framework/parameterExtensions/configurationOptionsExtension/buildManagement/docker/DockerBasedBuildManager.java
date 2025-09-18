@@ -23,17 +23,12 @@ import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.execution.TestPreparator;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.ParallelExecutorWithTimeout;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.TestCOMultiClientDelegate;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.resultsCollector.ConfigOptionsMetadataResultsCollector;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigOptionValueTranslation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FlagTranslation;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.PortRange;
-import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.SingleValueOptionTranslation;
 import java.io.IOException;
 import java.net.*;
 import java.nio.file.Paths;
@@ -644,12 +639,9 @@ public class DockerBasedBuildManager {
      */
     protected String createConfigOptionCliString(
             Set<ConfigurationOptionDerivationParameter> optionSet) {
-        Map<ParameterIdentifier, ConfigOptionValueTranslation> optionsToTranslationMap =
-                configOptionsConfig.getOptionsToTranslationMap();
         List<String> optionsCliList = new ArrayList<>();
         for (ConfigurationOptionDerivationParameter optionParameter : optionSet) {
-            String cliOption =
-                    translateOptionValue(optionParameter, optionsToTranslationMap).trim();
+            String cliOption = configOptionsConfig.translateOptionValue(optionParameter).trim();
             if (!cliOption.isEmpty()) {
                 optionsCliList.add(cliOption);
             }
@@ -689,71 +681,5 @@ public class DockerBasedBuildManager {
 
     public Map<String, DockerTestContainer> getDockerTagToContainerInfoMap() {
         return dockerTagToContainerInfo;
-    }
-
-    /**
-     * Translates a given configuration option to a tls library specific string.
-     *
-     * @param optionParameter - the configuration option to translate (including its set value)
-     * @param optionsToTranslationMap - the translation map of the configuration options config
-     * @return the translated string
-     */
-    protected String translateOptionValue(
-            ConfigurationOptionDerivationParameter optionParameter,
-            Map<ParameterIdentifier, ConfigOptionValueTranslation> optionsToTranslationMap) {
-        ConfigurationOptionValue value = optionParameter.getSelectedValue();
-        if (value == null) {
-            throw new IllegalArgumentException(
-                    "Passed option parameter has no selected value yet.");
-        }
-        ParameterIdentifier parameterIdentifier = optionParameter.getParameterIdentifier();
-        if (!(parameterIdentifier.getParameterType() instanceof ConfigOptionParameterType)) {
-            throw new IllegalArgumentException(
-                    "Passed derivation parameter is not of type ConfigOptionDerivationType.");
-        }
-
-        if (!optionsToTranslationMap.containsKey(parameterIdentifier)) {
-            throw new IllegalStateException(
-                    "The ConfigurationOptionsConfig's translation map does not contain the passed type");
-        }
-
-        ConfigOptionValueTranslation translation = optionsToTranslationMap.get(parameterIdentifier);
-
-        if (translation instanceof FlagTranslation) {
-            FlagTranslation flagTranslation = (FlagTranslation) translation;
-            if (!value.isFlag()) {
-                throw new IllegalStateException(
-                        "The ConfigurationOptionsConfig's translation is a flag, but the ConfigurationOptionValue isn't. Value can't be translated.");
-            }
-
-            if (value.isOptionSet()) {
-                return flagTranslation.getDataIfSet();
-            } else {
-                return flagTranslation.getDataIfNotSet();
-            }
-        } else if (translation instanceof SingleValueOptionTranslation) {
-            SingleValueOptionTranslation singleValueTranslation =
-                    (SingleValueOptionTranslation) translation;
-            if (value.isFlag()) {
-                throw new IllegalStateException(
-                        "The ConfigurationOptionsConfig's translation has a value, but the ConfigurationOptionValue is a flag. Value can't be translated.");
-            }
-            List<String> optionValues = value.getOptionValues();
-            if (optionValues.size() != 1) {
-                throw new IllegalStateException(
-                        "The ConfigurationOptionsConfig's translation has a single value, but the ConfigurationOptionValue is not a single value. Value can't be translated.");
-            }
-            String optionValue = optionValues.get(0);
-
-            String translatedName = singleValueTranslation.getIdentifier();
-            String translatedValue = singleValueTranslation.getValueTranslation(optionValue);
-
-            return String.format("%s=%s", translatedName, translatedValue);
-        } else {
-            throw new UnsupportedOperationException(
-                    String.format(
-                            "The DockerBasedBuildManager does not support translations '%s'.",
-                            translation.getClass()));
-        }
     }
 }
