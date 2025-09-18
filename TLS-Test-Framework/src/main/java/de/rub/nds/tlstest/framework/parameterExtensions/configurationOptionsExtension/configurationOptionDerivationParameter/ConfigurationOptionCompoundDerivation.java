@@ -111,7 +111,7 @@ public class ConfigurationOptionCompoundDerivation
      * Creates regex filter constraints for all parameter types that have constraints defined for
      * any configuration option in the current setup.
      */
-    private List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
+    public List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
         List<ConditionalConstraint> constraints = new LinkedList<>();
 
         ConfigurationOptionsDerivationManager coManager =
@@ -130,7 +130,14 @@ public class ConfigurationOptionCompoundDerivation
                         configOptionsConfig.getConstraintsForConfigOption(
                                 configParam.getParameterIdentifier());
                 for (FeatureConstraint constraint : paramConstraints) {
-                    constrainedParameterIdentifiers.add(constraint.getParameterIdentifier());
+                    // CO Flag Constraints are handled separately since they must be applied when
+                    // building
+                    // the isolated CO IPM
+                    if (!constraint
+                            .getParameterIdentifier()
+                            .contains(CommonBuildParameterScope.SCOPE_IDENTIFIER)) {
+                        constrainedParameterIdentifiers.add(constraint.getParameterIdentifier());
+                    }
                 }
             }
         }
@@ -143,14 +150,8 @@ public class ConfigurationOptionCompoundDerivation
                             AnvilContextRegistry.getContext(
                                     TestContextRegistry.getContextIdFromExtensionContext(
                                             scope.getExtensionContext())));
-            // CO Flag Constraints are handled separately since they must be applied when building
-            // the isolated CO IPM
-            if (!(targetParameterIdentifier.getParameterScope()
-                    instanceof CommonBuildParameterScope)) {
-                constraints.add(
-                        createRegexFilterConstraint(
-                                targetParameterIdentifier, configOptionsConfig));
-            }
+            constraints.add(
+                    createRegexFilterConstraint(targetParameterIdentifier, configOptionsConfig));
         }
 
         return constraints;

@@ -158,7 +158,8 @@ public class ConfigurationOptionsDerivationManager {
             builder.parameter(new Parameter(coIdentifier.name(), values));
             // - Add constraints
             List<ConditionalConstraint> constraints =
-                    coDerivationParameter.getDefaultConditionalConstraints(null);
+                    coDerivationParameter.getRegexFilterConstraints(
+                            config, config.getTestContext());
             for (ConditionalConstraint condConstraint : constraints) {
                 boolean allRequiredParametersAvailable =
                         condConstraint.getRequiredParameters().stream()
@@ -168,10 +169,7 @@ public class ConfigurationOptionsDerivationManager {
                                                                 instanceof
                                                                 ConfigOptionParameterType)
                                                         && config.getEnabledConfigOptionDerivations()
-                                                                .contains(
-                                                                        (ConfigOptionParameterType)
-                                                                                reqParameter
-                                                                                        .getParameterType()));
+                                                                .contains(reqParameter));
 
                 if (allRequiredParametersAvailable) {
                     builder.exclusionConstraint(condConstraint.getConstraint());

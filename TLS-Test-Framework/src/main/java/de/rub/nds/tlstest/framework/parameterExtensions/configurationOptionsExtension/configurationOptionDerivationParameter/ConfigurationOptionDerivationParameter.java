@@ -11,15 +11,23 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
 import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.anvilcore.model.parameter.ParameterScope;
 import de.rub.nds.tlsattacker.core.config.Config;
+import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionValue;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FeatureConstraint;
+import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class ConfigurationOptionDerivationParameter
         extends DerivationParameter<Config, ConfigurationOptionValue> {
@@ -87,5 +95,80 @@ public abstract class ConfigurationOptionDerivationParameter
         return getSelectedValue().toString();
     }
 
-    // Constraint logic is now handled by ConfigurationOptionCompoundDerivation
+    public List<ConditionalConstraint> getRegexFilterConstraints(
+            ConfigurationOptionsConfig configOptionsConfig, TestContext testContext) {
+        List<ConditionalConstraint> constraints = new LinkedList<>();
+
+        if (this.getParameterIdentifier().getParameterType()
+                == ConfigOptionParameterType.COMMON_BUILD_FLAG) {
+            List<FeatureConstraint> buildflagConstraints =
+                    configOptionsConfig.getConstraintsForConfigOption(
+                            this.getParameterIdentifier());
+            buildflagConstraints =
+                    buildflagConstraints.stream()
+                            .filter(
+                                    constraint ->
+                                            constraint
+                                                    .getParameterIdentifier()
+                                                    .contains(
+                                                            CommonBuildParameterScope
+                                                                    .SCOPE_IDENTIFIER))
+                            .toList();
+
+            for (FeatureConstraint newConstraint : buildflagConstraints) {
+                ParameterIdentifier targetIdentifier =
+                        new ParameterIdentifier(
+                                ConfigOptionParameterType.COMMON_BUILD_FLAG,
+                                configOptionsConfig.getCommonScopeForType(
+                                        newConstraint.getParameterIdentifier()));
+                constraints.add(
+                        getRegexFlagConstraint(
+                                targetIdentifier, newConstraint, configOptionsConfig));
+            }
+        }
+
+        return constraints;
+    }
+
+    private ConditionalConstraint getRegexFlagConstraint(
+            ParameterIdentifier targetParameter,
+            FeatureConstraint constraint,
+            ConfigurationOptionsConfig configOptionsConfig) {
+        Set<ParameterIdentifier> requiredDerivations = new HashSet<>();
+        requiredDerivations.add(targetParameter);
+        requiredDerivations.add(this.getParameterIdentifier());
+
+        return new ConditionalConstraint(
+                requiredDerivations,
+                ConstraintBuilder.constrain(
+                                this.getParameterIdentifier().name(), targetParameter.name())
+                        .by(
+                                (ConfigurationOptionDerivationParameter restrictionDefining,
+                                        ConfigurationOptionDerivationParameter targetParam) -> {
+
+                                    // For all options of a setup, check if constraint applies to
+                                    // value of option and check if regex matches
+                                    String valueString =
+                                            restrictionDefining.getSelectedValue().toString();
+                                    if (restrictionDefining.getSelectedValue().isFlag()) {
+                                        valueString =
+                                                configOptionsConfig.translateOptionValue(
+                                                        restrictionDefining);
+                                    }
+                                    if (constraint.appliesForValue(valueString)) {
+                                        String regex = constraint.getRegexFilter();
+                                        String targetValue =
+                                                targetParam.getSelectedValue().toString();
+                                        if (targetParam.getSelectedValue().isFlag()) {
+                                            targetValue =
+                                                    configOptionsConfig.translateOptionValue(
+                                                            targetParam);
+                                        }
+                                        if (regex != null && targetValue.matches(regex)) {
+                                            return false;
+                                        }
+                                    }
+                                    return true;
+                                }));
+    }
 }

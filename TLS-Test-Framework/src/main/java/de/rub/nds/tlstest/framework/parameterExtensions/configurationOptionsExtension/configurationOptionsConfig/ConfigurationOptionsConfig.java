@@ -338,9 +338,8 @@ public class ConfigurationOptionsConfig {
                 ParameterScope scopeToUse = null;
                 ParameterType typeToUse = null;
                 if (type.startsWith(CommonBuildParameterScope.SCOPE_IDENTIFIER + ":")) {
-                    String optionName = type.split(":")[1];
                     typeToUse = ConfigOptionParameterType.COMMON_BUILD_FLAG;
-                    scopeToUse = new CommonBuildParameterScope(optionName);
+                    scopeToUse = getCommonScopeForType(type);
                 } else {
                     scopeToUse = ConfigOptionParameterScope.DEFAULT;
                     typeToUse = derivationTypeFromString(type);
@@ -357,6 +356,11 @@ public class ConfigurationOptionsConfig {
                         new ParameterIdentifier(typeToUse, scopeToUse), translation);
             }
         }
+    }
+
+    public ParameterScope getCommonScopeForType(String commonOptionEntry) {
+        String optionName = commonOptionEntry.split(":")[1];
+        return new CommonBuildParameterScope(optionName);
     }
 
     private ConfigOptionParameterType derivationTypeFromString(String str)
