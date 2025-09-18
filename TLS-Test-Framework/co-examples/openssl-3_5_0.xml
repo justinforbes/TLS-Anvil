@@ -162,8 +162,8 @@
             <derivationType>CommonBuildParameter:ENABLE_NIST_EC_OPTIMIZATIONS</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
-                <true></true>
-                <false maxValue="true">no-ec_nistp_64_gcc_128</false>
+                <true maxValue="true"></true>
+                <false>no-ec_nistp_64_gcc_128</false>
             </valueTranslation>
         </optionEntry>
 
@@ -188,7 +188,8 @@
             <featureConstraints>
                 <constraint>
                     <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
-                    <regexFilter>.*(ECDH|ECDSA).*</regexFilter>
+                    <!-- block any cipher with ECDH or ECDSA in it or missing 'WITH' (== TLS 1.3) -->
+                    <regexFilter>^(.*(ECDH|ECDSA).*$|(?!.*WITH).*)$</regexFilter>
                     <applyFor>
                         <flagValue>no-ec</flagValue>
                     </applyFor>
