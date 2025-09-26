@@ -321,11 +321,14 @@ public class TlsAnvilConfig extends TLSDelegateConfig {
         } else {
             pcapFilterBuilder.append("tcp");
         }
-        pcapFilterBuilder.append(" port ");
-        if (getTestEndpointMode() == TestEndpointType.SERVER) {
-            pcapFilterBuilder.append(getTestServerDelegate().getExtractedPort());
-        } else {
-            pcapFilterBuilder.append(getTestClientDelegate().getPort());
+        // when using a CO file, we will capture traffic for multiple ports, hence, we cannot filter
+        if (configOptionsConfigFile.isEmpty()) {
+            pcapFilterBuilder.append(" port ");
+            if (getTestEndpointMode() == TestEndpointType.SERVER) {
+                pcapFilterBuilder.append(getTestServerDelegate().getExtractedPort());
+            } else {
+                pcapFilterBuilder.append(getTestClientDelegate().getPort());
+            }
         }
         return pcapFilterBuilder.toString();
     }
