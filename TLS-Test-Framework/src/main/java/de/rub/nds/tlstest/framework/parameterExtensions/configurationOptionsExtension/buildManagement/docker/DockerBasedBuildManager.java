@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -230,8 +231,17 @@ public class DockerBasedBuildManager {
                 if (!success) {
                     throw new RuntimeException(
                             String.format(
-                                    "Cannot create docker container for tag '%s'. Building failed.",
-                                    dockerTag));
+                                    "Cannot create docker container for tag '%s'. Building failed. Build parameters: %s",
+                                    dockerTag,
+                                    optionSet.stream()
+                                            .map(
+                                                    option ->
+                                                            option.getParameterIdentifier()
+                                                                            .toString()
+                                                                    + ":"
+                                                                    + option.getSelectedValue()
+                                                                            .toString())
+                                            .collect(Collectors.joining(", "))));
                 }
             }
             synchronized (this) {
