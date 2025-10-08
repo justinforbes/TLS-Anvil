@@ -424,6 +424,26 @@ public class ConfigurationOptionsConfig {
         return new ArrayList<>();
     }
 
+    public List<FeatureConstraint> getConstraintForConfigOptionTargetPair(
+            ParameterIdentifier configOption, ParameterIdentifier constrainedParameter) {
+        List<FeatureConstraint> configOptionConstraints =
+                getConstraintsForConfigOption(configOption);
+        AnvilContext anvilContext =
+                AnvilContextRegistry.getContext(TestContextRegistry.getContextId(testContext));
+        return configOptionConstraints.stream()
+                .filter(
+                        constraint ->
+                                !constraint
+                                                .getParameterIdentifier()
+                                                .contains(
+                                                        CommonBuildParameterScope.SCOPE_IDENTIFIER)
+                                        && ParameterIdentifier.fromName(
+                                                        constraint.getParameterIdentifier(),
+                                                        anvilContext)
+                                                .equals(constrainedParameter))
+                .collect(Collectors.toList());
+    }
+
     /** Parses feature constraints from an optionEntry element and adds them to the translation. */
     private void parseFeatureConstraints(
             Element optionEntry, ConfigOptionValueTranslation translation) {

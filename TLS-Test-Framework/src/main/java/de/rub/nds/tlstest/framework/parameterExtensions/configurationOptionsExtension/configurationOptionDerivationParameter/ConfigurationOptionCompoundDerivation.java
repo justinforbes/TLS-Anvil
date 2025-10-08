@@ -11,6 +11,7 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.rub.nds.anvilcore.context.AnvilContext;
 import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.model.DerivationScope;
 import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
@@ -111,17 +112,24 @@ public class ConfigurationOptionCompoundDerivation
      * Creates regex filter constraints for all parameter types that have constraints defined for
      * any configuration option in the current setup.
      */
-    public List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
-        List<ConditionalConstraint> constraints = new LinkedList<>();
+    public static List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
 
         ConfigurationOptionsDerivationManager coManager =
                 TestContextRegistry.byExtensionContext(scope.getExtensionContext())
                         .getConfigurationOptionsExtension()
                         .getDerivationManager();
-        // Get the configuration options config
-        ConfigurationOptionsConfig configOptionsConfig = coManager.getConfigurationOptionsConfig();
+        AnvilContext anvilContext =
+                AnvilContextRegistry.getContext(
+                        TestContextRegistry.getContextIdFromExtensionContext(
+                                scope.getExtensionContext()));
+        Set<String> constrainedParameterIdentifiers = getConstrainedParameterIdentifiers(coManager);
+        return createParameterBoundConstraints(
+                coManager, anvilContext, constrainedParameterIdentifiers);
+    }
 
-        // Collect all parameter identifiers that have constraints defined
+    private static Set<String> getConstrainedParameterIdentifiers(
+            ConfigurationOptionsDerivationManager coManager) {
+        ConfigurationOptionsConfig configOptionsConfig = coManager.getConfigurationOptionsConfig();
         Set<String> constrainedParameterIdentifiers = new HashSet<>();
         for (List<ConfigurationOptionDerivationParameter> setup :
                 coManager.getCompoundSetupList()) {
@@ -141,19 +149,22 @@ public class ConfigurationOptionCompoundDerivation
                 }
             }
         }
+        return constrainedParameterIdentifiers;
+    }
 
-        // Create constraints for each parameter type that has constraints defined
+    private static List<ConditionalConstraint> createParameterBoundConstraints(
+            ConfigurationOptionsDerivationManager coManager,
+            AnvilContext anvilContext,
+            Set<String> constrainedParameterIdentifiers) {
+        ConfigurationOptionsConfig configOptionsConfig = coManager.getConfigurationOptionsConfig();
+        List<ConditionalConstraint> constraints = new LinkedList<>();
+
         for (String paramIdentifier : constrainedParameterIdentifiers) {
             ParameterIdentifier targetParameterIdentifier =
-                    ParameterIdentifier.fromName(
-                            paramIdentifier,
-                            AnvilContextRegistry.getContext(
-                                    TestContextRegistry.getContextIdFromExtensionContext(
-                                            scope.getExtensionContext())));
+                    ParameterIdentifier.fromName(paramIdentifier, anvilContext);
             constraints.add(
                     createRegexFilterConstraint(targetParameterIdentifier, configOptionsConfig));
         }
-
         return constraints;
     }
 
@@ -162,7 +173,7 @@ public class ConfigurationOptionCompoundDerivation
      * configuration option in the current setup triggers feature constraints for the target
      * parameter.
      */
-    private ConditionalConstraint createRegexFilterConstraint(
+    private static ConditionalConstraint createRegexFilterConstraint(
             ParameterIdentifier targetParameterIdentifier,
             ConfigurationOptionsConfig configOptionsConfig) {
         Set<ParameterIdentifier> requiredDerivations = new HashSet<>();
@@ -185,8 +196,12 @@ public class ConfigurationOptionCompoundDerivation
                                     for (ConfigurationOptionDerivationParameter coEntry :
                                             compoundDerivation.getSelectedValue()) {
                                         for (FeatureConstraint constraint :
-                                                configOptionsConfig.getConstraintsForConfigOption(
-                                                        coEntry.getParameterIdentifier())) {
+                                                configOptionsConfig
+                                                        .getConstraintForConfigOptionTargetPair(
+                                                                coEntry.getParameterIdentifier(),
+                                                                targetParam
+                                                                        .getParameterIdentifier())) {
+
                                             String valueString =
                                                     coEntry.getSelectedValue().toString();
                                             if (coEntry.getSelectedValue().isFlag()) {
@@ -326,14 +341,18 @@ public class ConfigurationOptionCompoundDerivation
 
     @JsonValue
     public String jsonValue() {
-        StringBuilder stringBuilder = new StringBuilder();
         return getSelectedValue().stream()
                 .map(
                         parameter -> {
-                            return parameter.getParameterIdentifier().getParameterType()
-                                    + ":"
+                            return parameter.getParameterIdentifier().name()
+                                    + "="
                                     + parameter.getSelectedValue().toString();
                         })
                 .collect(Collectors.joining(","));
+    }
+
+    @Override
+    public String toString() {
+        return jsonValue();
     }
 }
