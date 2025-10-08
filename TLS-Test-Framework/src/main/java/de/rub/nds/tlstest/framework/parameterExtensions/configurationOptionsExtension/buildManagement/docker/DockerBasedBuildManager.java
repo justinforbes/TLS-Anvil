@@ -310,9 +310,10 @@ public class DockerBasedBuildManager {
         LOGGER.info("Max feature build:");
         for (ConfigurationOptionDerivationParameter param : optionSet) {
             LOGGER.info(
-                    "{} with flag val {}",
+                    "{} with flag val {} ({})",
                     param.getParameterIdentifier().name(),
-                    param.getSelectedValue().toString());
+                    param.getSelectedValue().toString(),
+                    configOptionsConfig.translateOptionValue(param));
         }
         LOGGER.info("-------------------------");
         return optionSet;
@@ -529,33 +530,16 @@ public class DockerBasedBuildManager {
     public synchronized void onShutdown() {
         resultsCollector.finalizeResults();
 
-        // Stop all running containers
+        LOGGER.info("Stopping all running containers...");
         for (Map.Entry<String, DockerTestContainer> entry : dockerTagToContainerInfo.entrySet()) {
             if (entry.getValue().getContainerState() == DockerContainerState.RUNNING) {
                 entry.getValue().stop();
             }
         }
 
-        // Divide all containers in subsets of <maxRunningContainer> containers for simultaneous
-        // shutdown.
-        List<Set<String>> containersSubsets = new LinkedList<>();
-        containersSubsets.add(new HashSet<>());
-        int containerSetsIdx = 0;
-        int currentSubsetSize = 0;
+        LOGGER.info("Removing all containers...");
         for (Map.Entry<String, DockerTestContainer> entry : dockerTagToContainerInfo.entrySet()) {
-            if (currentSubsetSize >= configOptionsConfig.getMaxRunningContainerShutdowns()) {
-                containersSubsets.add(new HashSet<>());
-                containerSetsIdx += 1;
-                currentSubsetSize = 0;
-            }
-            containersSubsets.get(containerSetsIdx).add(entry.getKey());
-            currentSubsetSize += 1;
-        }
-
-        LOGGER.info("Shutdown and clear all containers. This may take a while...");
-        // Shutdown all containers
-        for (Set<String> notRunningSubset : containersSubsets) {
-            shutdownContainerSet(notRunningSubset);
+            entry.getValue().remove();
         }
     }
 
