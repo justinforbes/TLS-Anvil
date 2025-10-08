@@ -92,7 +92,11 @@ public abstract class ConfigurationOptionDerivationParameter
 
     @JsonValue
     public String jsonValue() {
-        return getSelectedValue().toString();
+        return getParameterIdentifier().name() + "=" + getSelectedValue().toString();
+    }
+
+    public String toString() {
+        return jsonValue();
     }
 
     public List<ConditionalConstraint> getRegexFilterConstraints(
