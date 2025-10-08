@@ -14,6 +14,7 @@ import com.github.dockerjava.api.DockerClient;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.execution.TestPreparator;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -186,6 +187,11 @@ public abstract class DockerTestContainer extends DockerContainer {
      */
     public FeatureExtractionResult getFeatureExtractionResult() {
         if (featureExtractionResult == null) {
+            FeatureExtractionResult cachedResult = loadCachedFeatureExtractionResult();
+            if (cachedResult != null) {
+                return cachedResult;
+            }
+
             LOGGER.info("Create site report for container with tag '{}'...", this.dockerTag);
             DockerContainerState state = getContainerState();
             startUsage();
@@ -211,8 +217,32 @@ public abstract class DockerTestContainer extends DockerContainer {
                         "Cannot create site report. Container cannot be started.");
             }
             endUsage();
+
+            String cacheFileName =
+                    "co_features_" + getDockerTag().replace(":", "_").replace("/", "_");
+            TestPreparator.saveToCache(featureExtractionResult, cacheFileName);
+            LOGGER.info(
+                    "Saved feature extraction result to cache for container tag '{}'",
+                    getDockerTag());
         }
         return featureExtractionResult;
+    }
+
+    private FeatureExtractionResult loadCachedFeatureExtractionResult() {
+        String cacheFileName = "co_features_" + getDockerTag().replace(":", "_").replace("/", "_");
+        boolean ignoreCache = testContext.getConfig().getAnvilTestConfig().isIgnoreCache();
+
+        FeatureExtractionResult cachedResult =
+                TestPreparator.loadFromCache(cacheFileName, ignoreCache);
+
+        if (cachedResult != null) {
+            LOGGER.info(
+                    "Retrieved feature extraction result from cache for container tag '{}'",
+                    getDockerTag());
+            featureExtractionResult = cachedResult;
+        }
+
+        return cachedResult;
     }
 
     /**

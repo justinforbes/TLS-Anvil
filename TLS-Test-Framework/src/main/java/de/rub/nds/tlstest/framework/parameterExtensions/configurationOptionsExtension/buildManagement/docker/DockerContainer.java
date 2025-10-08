@@ -107,7 +107,7 @@ public class DockerContainer {
     // Management
 
     /** Starts a stopped container. */
-    public synchronized void start() {
+    private synchronized void start() {
         if (this.getContainerState() != DockerContainerState.NOT_RUNNING) {
             throw new IllegalStateException("Cannot start a running (or paused) container.");
         }

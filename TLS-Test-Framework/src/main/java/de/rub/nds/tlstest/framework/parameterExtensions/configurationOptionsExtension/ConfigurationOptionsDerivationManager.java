@@ -15,7 +15,6 @@ import de.rub.nds.anvilcore.model.parameter.ParameterIdentifier;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
-import de.rub.nds.tlstest.framework.execution.TestPreparator;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.docker.DockerBasedBuildManager;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.buildManagement.docker.DockerTestContainer;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter.ConfigurationOptionDerivationParameter;
@@ -315,38 +314,10 @@ public class ConfigurationOptionsDerivationManager {
                     DockerTestContainer testContainer =
                             coBuildManager.getDockerTagToContainerInfoMap().get(containerTag);
 
-                    // Create a callable that checks cache first, then extracts features if needed
                     return new Callable<FeatureExtractionResult>() {
                         @Override
-                        public FeatureExtractionResult call() throws Exception {
-                            String cacheFileName =
-                                    "co_features_"
-                                            + containerTag.replace(":", "_").replace("/", "_");
-                            boolean ignoreCache =
-                                    context.getConfig().getAnvilTestConfig().isIgnoreCache();
-
-                            // Try to load from cache first
-                            FeatureExtractionResult cachedResult =
-                                    TestPreparator.loadFromCache(cacheFileName, ignoreCache);
-
-                            if (cachedResult != null) {
-                                LOGGER.info(
-                                        "Loaded feature extraction result from cache for container tag '{}'",
-                                        containerTag);
-                                testContainer.setFeatureExtractionResult(cachedResult);
-                                return cachedResult;
-                            }
-
-                            FeatureExtractionResult result =
-                                    testContainer.getFeatureExtractionResult();
-
-                            // Save to cache for future use
-                            TestPreparator.saveToCache(result, cacheFileName);
-                            LOGGER.info(
-                                    "Saved feature extraction result to cache for container tag '{}'",
-                                    containerTag);
-
-                            return result;
+                        public FeatureExtractionResult call() {
+                            return testContainer.getFeatureExtractionResult();
                         }
                     };
                 });
