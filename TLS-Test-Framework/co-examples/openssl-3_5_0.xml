@@ -159,18 +159,18 @@
 
         <!-- EC NIST P optimizations (mapped from no-ec_nistp_64_gcc_128) -->
         <optionEntry>
-            <derivationType>CommonBuildParameter:ENABLE_NIST_EC_OPTIMIZATIONS</derivationType>
+            <derivationType>CommonBuildParameter:DISABLE_NIST_EC_OPTIMIZATIONS</derivationType>
             <enabled>true</enabled>
             <valueTranslation type="Flag">
-                <true maxValue="true"></true>
-                <false>no-ec_nistp_64_gcc_128</false>
+                <true>no-ec_nistp_64_gcc_128</true>
+                <false maxValue="true"></false>
             </valueTranslation>
         </optionEntry>
 
         <!-- DTLS Support -->
         <optionEntry>
             <derivationType>CommonBuildParameter:DISABLE_DTLS</derivationType>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-dtls</true>
                 <false maxValue="true"></false>
@@ -265,6 +265,13 @@
                         <flagValue>no-dh</flagValue>
                     </applyFor>
                 </constraint>
+                <constraint>
+                    <parameterIdentifier>NAMED_GROUP</parameterIdentifier>
+                    <regexFilter>^FFDHE.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-dh</flagValue>
+                    </applyFor>
+                </constraint>
             </featureConstraints>
         </optionEntry>
 
@@ -338,11 +345,21 @@
         <!-- Datagram BIO -->
         <optionEntry>
             <derivationType>CommonBuildParameter:DISABLE_DATAGRAM_BIO</derivationType>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-dgram</true>
                 <false maxValue="true"></false>
             </valueTranslation>
+            <featureConstraints>
+                <!-- ensure we also disable DTLS when datagram BIO is off-->
+                <constraint>
+                    <parameterIdentifier>CommonBuildParameter:DISABLE_DTLS</parameterIdentifier>
+                    <regexFilter>^no-dtls$</regexFilter>
+                    <applyFor>
+                        <flagValue>no-dgram</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
         </optionEntry>
 
         <!-- Dynamic Engine -->
@@ -358,7 +375,8 @@
         <!-- TCP Fast Open (TFO) -->
         <optionEntry>
             <derivationType>CommonBuildParameter:DISABLE_TFO</derivationType>
-            <enabled>true</enabled>
+            <!-- Disabled as performance is significantly worse due to TCP wait states -->
+            <enabled>false</enabled>
             <valueTranslation type="Flag">
                 <true>no-tfo</true>
                 <false maxValue="true"></false>
