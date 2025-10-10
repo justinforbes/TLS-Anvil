@@ -217,7 +217,12 @@ public class DockerBasedBuildManager {
             }
 
             // SubCase: The image for the container does not already exists
-            if (!dockerFactory.dockerNameWithTagExists(dockerNameWithTag)) {
+            if (DockerBuilder.getBuiltImage(
+                            dockerTlsImplementation,
+                            libraryVersion,
+                            libraryConnectionRole,
+                            cliOptions)
+                    == null) {
                 LOGGER.info(String.format("Build new image with tag '%s'...", dockerTag));
                 long timer = System.currentTimeMillis();
                 boolean success =
