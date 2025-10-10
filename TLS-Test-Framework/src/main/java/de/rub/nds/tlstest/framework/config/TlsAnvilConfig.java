@@ -501,7 +501,8 @@ public class TlsAnvilConfig extends TLSDelegateConfig {
                 "managesieve");
 
         cachedConfig = config;
-        return config;
+        // Create a deep copy to ensure any test modifications do not alter our default config
+        return cachedConfig.createCopy();
     }
 
     public boolean checkRenegotiationInfoOffer() {
