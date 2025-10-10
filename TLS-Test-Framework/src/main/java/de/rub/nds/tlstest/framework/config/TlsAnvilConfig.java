@@ -321,11 +321,14 @@ public class TlsAnvilConfig extends TLSDelegateConfig {
         } else {
             pcapFilterBuilder.append("tcp");
         }
-        pcapFilterBuilder.append(" port ");
-        if (getTestEndpointMode() == TestEndpointType.SERVER) {
-            pcapFilterBuilder.append(getTestServerDelegate().getExtractedPort());
-        } else {
-            pcapFilterBuilder.append(getTestClientDelegate().getPort());
+        // when using a CO file, we will capture traffic for multiple ports, hence, we cannot filter
+        if (configOptionsConfigFile.isEmpty()) {
+            pcapFilterBuilder.append(" port ");
+            if (getTestEndpointMode() == TestEndpointType.SERVER) {
+                pcapFilterBuilder.append(getTestServerDelegate().getExtractedPort());
+            } else {
+                pcapFilterBuilder.append(getTestClientDelegate().getPort());
+            }
         }
         return pcapFilterBuilder.toString();
     }
@@ -498,7 +501,8 @@ public class TlsAnvilConfig extends TLSDelegateConfig {
                 "managesieve");
 
         cachedConfig = config;
-        return config;
+        // Create a deep copy to ensure any test modifications do not alter our default config
+        return cachedConfig.createCopy();
     }
 
     public boolean checkRenegotiationInfoOffer() {

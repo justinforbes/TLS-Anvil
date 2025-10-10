@@ -14,6 +14,7 @@ import com.github.dockerjava.api.DockerClient;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
+import de.rub.nds.tlstest.framework.execution.TestPreparator;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -36,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class DockerTestContainer extends DockerContainer {
     private static final Logger LOGGER = LogManager.getLogger();
     protected Integer managerPort;
-    protected FeatureExtractionResult feaureExtractionResult;
+    protected FeatureExtractionResult featureExtractionResult;
     protected String dockerHost;
     protected int inUseCount;
     protected TestContext testContext;
@@ -61,7 +62,7 @@ public abstract class DockerTestContainer extends DockerContainer {
         super(dockerTag, containerId, dockerClient);
         this.dockerHost = dockerHost;
         this.managerPort = managerPort;
-        this.feaureExtractionResult = null;
+        this.featureExtractionResult = null;
         this.inUseCount = 0;
         this.testContext = testContext;
     }
@@ -185,7 +186,12 @@ public abstract class DockerTestContainer extends DockerContainer {
      * @return the containers TestSiteReport
      */
     public FeatureExtractionResult getFeatureExtractionResult() {
-        if (feaureExtractionResult == null) {
+        if (featureExtractionResult == null) {
+            FeatureExtractionResult cachedResult = loadCachedFeatureExtractionResult();
+            if (cachedResult != null) {
+                return cachedResult;
+            }
+
             LOGGER.info("Create site report for container with tag '{}'...", this.dockerTag);
             DockerContainerState state = getContainerState();
             startUsage();
@@ -193,14 +199,14 @@ public abstract class DockerTestContainer extends DockerContainer {
             try {
                 if (state == DockerContainerState.PAUSED) {
                     unpauseAndWait();
-                    feaureExtractionResult = createFeatureExtractionResult(parallelExecutor);
+                    featureExtractionResult = createFeatureExtractionResult(parallelExecutor);
                     pause();
                 } else if (state == DockerContainerState.NOT_RUNNING) {
                     startAndWait();
-                    feaureExtractionResult = createFeatureExtractionResult(parallelExecutor);
+                    featureExtractionResult = createFeatureExtractionResult(parallelExecutor);
                     stop();
                 } else if (state == DockerContainerState.RUNNING) {
-                    feaureExtractionResult = createFeatureExtractionResult(parallelExecutor);
+                    featureExtractionResult = createFeatureExtractionResult(parallelExecutor);
                 } else {
                     throw new RuntimeException(
                             "Can't create SiteReport in invalid container state.");
@@ -211,8 +217,42 @@ public abstract class DockerTestContainer extends DockerContainer {
                         "Cannot create site report. Container cannot be started.");
             }
             endUsage();
+
+            String cacheFileName =
+                    "co_features_" + getDockerTag().replace(":", "_").replace("/", "_");
+            TestPreparator.saveToCache(featureExtractionResult, cacheFileName);
+            LOGGER.info(
+                    "Saved feature extraction result to cache for container tag '{}'",
+                    getDockerTag());
         }
-        return feaureExtractionResult;
+        return featureExtractionResult;
+    }
+
+    private FeatureExtractionResult loadCachedFeatureExtractionResult() {
+        String cacheFileName = "co_features_" + getDockerTag().replace(":", "_").replace("/", "_");
+        boolean ignoreCache = testContext.getConfig().getAnvilTestConfig().isIgnoreCache();
+
+        FeatureExtractionResult cachedResult =
+                TestPreparator.loadFromCache(cacheFileName, ignoreCache);
+
+        if (cachedResult != null) {
+            LOGGER.info(
+                    "Retrieved feature extraction result from cache for container tag '{}'",
+                    getDockerTag());
+            featureExtractionResult = cachedResult;
+        }
+
+        return cachedResult;
+    }
+
+    /**
+     * Sets the feature extraction result directly, useful for loading from cache. This prevents
+     * redundant feature extraction when a cached result is available.
+     *
+     * @param cachedResult the cached feature extraction result
+     */
+    public void setFeatureExtractionResult(FeatureExtractionResult cachedResult) {
+        this.featureExtractionResult = cachedResult;
     }
 
     /**

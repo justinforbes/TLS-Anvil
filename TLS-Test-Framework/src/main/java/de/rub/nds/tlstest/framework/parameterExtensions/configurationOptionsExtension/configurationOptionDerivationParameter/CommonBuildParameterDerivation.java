@@ -46,7 +46,16 @@ public class CommonBuildParameterDerivation extends ConfigurationOptionDerivatio
                         .getConfigurationOptionsExtension()
                         .getDerivationManager()
                         .getConfigurationOptionsConfig();
+        return getParameterValuesForConfig(configOptionsConfig);
+    }
 
+    // For build flags, we use a separate IPM instanciated without ties to any specific test
+    // template.
+    // Hence, when collecting the parameters, a derivation scope may not always be present to
+    // determine which config we need to use.
+    @Override
+    public List<DerivationParameter<Config, ConfigurationOptionValue>> getParameterValuesForConfig(
+            ConfigurationOptionsConfig configOptionsConfig) {
         List<DerivationParameter<Config, ConfigurationOptionValue>> parameterValues =
                 new LinkedList<>();
         ConfigOptionValueTranslation translation =

@@ -9,6 +9,7 @@
  */
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
+import java.util.List;
 import org.w3c.dom.Element;
 
 /**
@@ -26,4 +27,13 @@ public abstract class ConfigOptionValueTranslation {
     }
 
     protected abstract void setFromXmlElement(Element xmlElement);
+
+    /**
+     * Returns the feature constraints that apply for the given configuration value.
+     *
+     * @param configValue The configuration value (e.g., Boolean for flags, String for single-value
+     *     options)
+     * @return List of feature constraints that apply for this value
+     */
+    public abstract List<FeatureConstraint> getConstraintsForValue(Object configValue);
 }

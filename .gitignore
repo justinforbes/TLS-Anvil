@@ -5,6 +5,12 @@ test.sh
 apps/
 target/
 
+# Execution output
+Results*/
+logs/
+report/
+cache/
+
 # Eclipse
 **/.classpath
 **/.project

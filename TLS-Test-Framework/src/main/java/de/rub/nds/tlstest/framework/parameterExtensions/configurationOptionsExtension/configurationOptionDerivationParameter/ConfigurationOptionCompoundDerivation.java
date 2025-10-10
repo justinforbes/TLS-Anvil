@@ -11,6 +11,8 @@
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionDerivationParameter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.rub.nds.anvilcore.context.AnvilContext;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import de.rub.nds.anvilcore.model.DerivationScope;
 import de.rub.nds.anvilcore.model.constraint.ConditionalConstraint;
 import de.rub.nds.anvilcore.model.parameter.DerivationParameter;
@@ -23,7 +25,11 @@ import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.model.TlsParameterType;
 import de.rub.nds.tlstest.framework.model.derivationParameter.CipherSuiteDerivation;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.CommonBuildParameterScope;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigOptionParameterType;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.ConfigurationOptionsDerivationManager;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
+import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.FeatureConstraint;
 import de.rwth.swc.coffee4j.model.constraints.ConstraintBuilder;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -98,7 +104,123 @@ public class ConfigurationOptionCompoundDerivation
     public List<ConditionalConstraint> getDefaultConditionalConstraints(DerivationScope scope) {
         List<ConditionalConstraint> condConstraints = new LinkedList<>();
         condConstraints.add(getWeakCipherSuitesMustBeEnabledToBeUsedConstraint());
+        condConstraints.addAll(getRegexFilterConstraints(scope));
         return condConstraints;
+    }
+
+    /**
+     * Creates regex filter constraints for all parameter types that have constraints defined for
+     * any configuration option in the current setup.
+     */
+    public static List<ConditionalConstraint> getRegexFilterConstraints(DerivationScope scope) {
+
+        ConfigurationOptionsDerivationManager coManager =
+                TestContextRegistry.byExtensionContext(scope.getExtensionContext())
+                        .getConfigurationOptionsExtension()
+                        .getDerivationManager();
+        AnvilContext anvilContext =
+                AnvilContextRegistry.getContext(
+                        TestContextRegistry.getContextIdFromExtensionContext(
+                                scope.getExtensionContext()));
+        Set<String> constrainedParameterIdentifiers = getConstrainedParameterIdentifiers(coManager);
+        return createParameterBoundConstraints(
+                coManager, anvilContext, constrainedParameterIdentifiers);
+    }
+
+    private static Set<String> getConstrainedParameterIdentifiers(
+            ConfigurationOptionsDerivationManager coManager) {
+        ConfigurationOptionsConfig configOptionsConfig = coManager.getConfigurationOptionsConfig();
+        Set<String> constrainedParameterIdentifiers = new HashSet<>();
+        for (List<ConfigurationOptionDerivationParameter> setup :
+                coManager.getCompoundSetupList()) {
+            for (ConfigurationOptionDerivationParameter configParam : setup) {
+                List<FeatureConstraint> paramConstraints =
+                        configOptionsConfig.getConstraintsForConfigOption(
+                                configParam.getParameterIdentifier());
+                for (FeatureConstraint constraint : paramConstraints) {
+                    // CO Flag Constraints are handled separately since they must be applied when
+                    // building
+                    // the isolated CO IPM
+                    if (!constraint
+                            .getParameterIdentifier()
+                            .contains(CommonBuildParameterScope.SCOPE_IDENTIFIER)) {
+                        constrainedParameterIdentifiers.add(constraint.getParameterIdentifier());
+                    }
+                }
+            }
+        }
+        return constrainedParameterIdentifiers;
+    }
+
+    private static List<ConditionalConstraint> createParameterBoundConstraints(
+            ConfigurationOptionsDerivationManager coManager,
+            AnvilContext anvilContext,
+            Set<String> constrainedParameterIdentifiers) {
+        ConfigurationOptionsConfig configOptionsConfig = coManager.getConfigurationOptionsConfig();
+        List<ConditionalConstraint> constraints = new LinkedList<>();
+
+        for (String paramIdentifier : constrainedParameterIdentifiers) {
+            ParameterIdentifier targetParameterIdentifier =
+                    ParameterIdentifier.fromName(paramIdentifier, anvilContext);
+            constraints.add(
+                    createRegexFilterConstraint(targetParameterIdentifier, configOptionsConfig));
+        }
+        return constraints;
+    }
+
+    /**
+     * Creates a regex filter constraint for a target parameter. The constraint checks if any
+     * configuration option in the current setup triggers feature constraints for the target
+     * parameter.
+     */
+    private static ConditionalConstraint createRegexFilterConstraint(
+            ParameterIdentifier targetParameterIdentifier,
+            ConfigurationOptionsConfig configOptionsConfig) {
+        Set<ParameterIdentifier> requiredDerivations = new HashSet<>();
+        requiredDerivations.add(targetParameterIdentifier);
+        requiredDerivations.add(
+                new ParameterIdentifier(
+                        ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER));
+
+        return new ConditionalConstraint(
+                requiredDerivations,
+                ConstraintBuilder.constrain(
+                                ConfigOptionParameterType.CONFIG_OPTION_COMPOUND_PARAMETER.name(),
+                                targetParameterIdentifier.getParameterType().toString())
+                        .by(
+                                (ConfigurationOptionCompoundDerivation compoundDerivation,
+                                        DerivationParameter targetParam) -> {
+
+                                    // For all options of a setup, check if constraint applies to
+                                    // value of option and check if regex matches
+                                    for (ConfigurationOptionDerivationParameter coEntry :
+                                            compoundDerivation.getSelectedValue()) {
+                                        for (FeatureConstraint constraint :
+                                                configOptionsConfig
+                                                        .getConstraintForConfigOptionTargetPair(
+                                                                coEntry.getParameterIdentifier(),
+                                                                targetParam
+                                                                        .getParameterIdentifier())) {
+
+                                            String valueString =
+                                                    coEntry.getSelectedValue().toString();
+                                            if (coEntry.getSelectedValue().isFlag()) {
+                                                valueString =
+                                                        configOptionsConfig.translateOptionValue(
+                                                                coEntry);
+                                            }
+                                            if (constraint.appliesForValue(valueString)) {
+                                                String regex = constraint.getRegexFilter();
+                                                String targetValue =
+                                                        targetParam.getSelectedValue().toString();
+                                                if (regex != null && targetValue.matches(regex)) {
+                                                    return false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return true;
+                                }));
     }
 
     private boolean isWeakCiphersuite(CipherSuite cipherSuite) {
@@ -219,14 +341,18 @@ public class ConfigurationOptionCompoundDerivation
 
     @JsonValue
     public String jsonValue() {
-        StringBuilder stringBuilder = new StringBuilder();
         return getSelectedValue().stream()
                 .map(
                         parameter -> {
-                            return parameter.getParameterIdentifier().getParameterType()
-                                    + ":"
+                            return parameter.getParameterIdentifier().name()
+                                    + "="
                                     + parameter.getSelectedValue().toString();
                         })
                 .collect(Collectors.joining(","));
+    }
+
+    @Override
+    public String toString() {
+        return jsonValue();
     }
 }

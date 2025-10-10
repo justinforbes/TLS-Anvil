@@ -10,6 +10,7 @@
 
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,11 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
     private String identifier;
     private final Map<String, String> valueTranslationMap;
     private String richestConfigurationLabel = "";
+    private List<FeatureConstraint> constraints;
 
     public SingleValueOptionTranslation(Element xmlElement) {
         valueTranslationMap = new HashMap<>();
+        this.constraints = new ArrayList<>();
         this.setFromXmlElement(xmlElement);
     }
 
@@ -105,5 +108,26 @@ public class SingleValueOptionTranslation extends ConfigOptionValueTranslation {
 
     public boolean isRichestConfiguration(String key) {
         return key.equals(richestConfigurationLabel);
+    }
+
+    public List<FeatureConstraint> getConstraints() {
+        return new ArrayList<>(constraints);
+    }
+
+    public void addConstraint(FeatureConstraint constraint) {
+        this.constraints.add(constraint);
+    }
+
+    @Override
+    public List<FeatureConstraint> getConstraintsForValue(Object configValue) {
+        if (!(configValue instanceof String)) {
+            return new ArrayList<>();
+        }
+
+        String valueString = (String) configValue;
+
+        return constraints.stream()
+                .filter(constraint -> constraint.appliesForValue(valueString))
+                .toList();
     }
 }

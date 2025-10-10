@@ -9,6 +9,8 @@
  */
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.w3c.dom.Element;
 
 /**
@@ -20,9 +22,11 @@ public class FlagTranslation extends ConfigOptionValueTranslation {
     private String dataIfNotSet;
 
     private boolean isRichestConfiguration;
+    private List<FeatureConstraint> constraints;
 
     public FlagTranslation(Element xmlElement) {
         super(xmlElement);
+        this.constraints = new ArrayList<>();
     }
 
     @Override
@@ -51,5 +55,27 @@ public class FlagTranslation extends ConfigOptionValueTranslation {
 
     public boolean isRichestConfiguration() {
         return isRichestConfiguration;
+    }
+
+    public List<FeatureConstraint> getConstraints() {
+        return new ArrayList<>(constraints);
+    }
+
+    public void addConstraint(FeatureConstraint constraint) {
+        this.constraints.add(constraint);
+    }
+
+    @Override
+    public List<FeatureConstraint> getConstraintsForValue(Object configValue) {
+        if (!(configValue instanceof Boolean)) {
+            return new ArrayList<>();
+        }
+
+        boolean flagValue = (Boolean) configValue;
+        String valueString = String.valueOf(flagValue);
+
+        return constraints.stream()
+                .filter(constraint -> constraint.appliesForValue(valueString))
+                .toList();
     }
 }

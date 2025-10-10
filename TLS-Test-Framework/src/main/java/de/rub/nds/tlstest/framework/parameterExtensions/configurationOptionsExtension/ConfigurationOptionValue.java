@@ -34,6 +34,7 @@ public class ConfigurationOptionValue {
     public ConfigurationOptionValue(boolean flagValue, boolean isRichestConfiguration) {
         this.isFlag = true;
         this.optionIsSet = flagValue;
+        this.isRichestConfiguration = isRichestConfiguration;
     }
 
     /**
@@ -47,6 +48,7 @@ public class ConfigurationOptionValue {
     public ConfigurationOptionValue(String optionValue, boolean isRichestConfiguration) {
         this.isFlag = false;
         this.optionIsSet = true;
+        this.isRichestConfiguration = isRichestConfiguration;
         stringValues = Collections.singletonList(optionValue);
     }
 

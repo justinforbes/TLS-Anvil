@@ -1,0 +1,458 @@
+<!-- OpenSSL 3.4.0 configuration based on green-marked flags from OpenSSL 3.4.0 build options -->
+<!-- This config is derived from the OpenSSL 1.1.1 config structure, adapted for OpenSSL 3.4.0 -->
+
+<config>
+    <!-- The name of the library to test. Can be chosen freely. -->
+    <tlsLibraryName>OPENSSL</tlsLibraryName>
+    <!-- The name of the library version. In OpenSSL the version name must match with a branch name of OpenSSL's github repository
+         This version is then used to create builds. -->
+    <tlsVersionName>3.5.0</tlsVersionName>
+    <!-- Config for working with docker  -->
+    <dockerConfig>
+        <!-- The host address all built containers are bind to.  -->
+        <dockerHostBinding>127.0.0.42</dockerHostBinding>
+        <!-- The address the docker container can be reached (May differ from dockerHostBinding when using docker with WSL on windows) -->
+        <dockerHostName>127.0.0.42</dockerHostName>
+        <!-- A range of ports that is used by the docker builds. Blocked ports are skipped automatically.
+             Each container required 2 ports -->
+        <portRange>8100-20000</portRange>
+        <!-- Only required for client tests. Configures the address containers need to connect to (i.e. where this framework runs)
+             Note that localhost of containers is not localhost of the host. Use 'host.docker.internal' for the host's localhost. -->
+        <dockerClientDestinationHost>host.docker.internal</dockerClientDestinationHost>
+    </dockerConfig>
+    <!-- Optional: Configures how many containers are running simultaneously. Rarely used containers are paused meanwhile. Default: 16 -->
+    <maxRunningContainers>6</maxRunningContainers>
+    <!-- Optional: Configures how many TLS library builds are created simultaneously. Default: 1 -->
+    <maxSimultaneousBuilds>5</maxSimultaneousBuilds>
+    <!-- Optional: Configures how many containers are shutdown simultaneously. Note that for coverage mode the coverage is
+         collected during the final shutdown. Therefore it takes much more CPU than the non coverage version. When this value
+         is to high it may happen that some containers are not shutdown properly and the coverage data is not correctly collected.
+         Default: 8 for enabled coverage, maxRunningContainers/2 otherwise -->
+    <maxRunningContainerShutdowns>6</maxRunningContainerShutdowns>
+    <!-- Optional: Strength of the input parameter model computing the configuration option parameter combinations.
+         Default is the strength of the main IPM configured using the Testsuite's CLI parameter '-strength' -->
+    <configOptionsIpmStrength>2</configOptionsIpmStrength>
+
+    <optionsToTest>
+
+        <!-- High Priority Options -->
+
+        <!-- SSE2 -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_SSE2</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-sse2</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Binary Elliptic Curves -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_BINARY_ELLIPTIC_CURVES</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ec2m</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- PSK -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_PSK</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-psk</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Certificate Transparency -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_CERTIFICATE_TRANSPARENCY</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ct</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- OCSP Support -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_OCSP_SUPPORT</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ocsp</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- SRP Cipher Suites -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_SRP_CIPHER_SUITES</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-srp</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- RFC3779 Extensions -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_EXTENSION_FOR_IP_ADRESSES_AND_AS_IDENTIFIERS</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-rfc3779</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Assembly Code Control -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_ASSEMBLER_CODE</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-asm</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Error Strings -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_ERROR_STRINGS</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-err</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Multiblock -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_MULTIBLOCK</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-multiblock</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- POSIX IO -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_POSIX_IO</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-posix-io</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Next Protocol Negotiation -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_NEXT_PROTOCOL_NEGOTIATION</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-nextprotoneg</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- EC NIST P optimizations (mapped from no-ec_nistp_64_gcc_128) -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_NIST_EC_OPTIMIZATIONS</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ec_nistp_64_gcc_128</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- DTLS Support -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_DTLS</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>no-dtls</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Elliptic Curves -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_ELLIPTIC_CURVES</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ec</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <!-- block any cipher with ECDH or ECDSA in it or missing 'WITH' (== TLS 1.3) -->
+                    <regexFilter>^(.*(ECDH|ECDSA).*$|(?!.*WITH).*)$</regexFilter>
+                    <applyFor>
+                        <flagValue>no-ec</flagValue>
+                    </applyFor>
+                </constraint>
+                <constraint>
+                    <parameterIdentifier>CommonBuildParameter:DISABLE_ECDSA</parameterIdentifier>
+                    <regexFilter>^$</regexFilter>
+                    <applyFor>
+                        <flagValue>no-ec</flagValue>
+                    </applyFor>
+                </constraint>
+                <constraint>
+                    <parameterIdentifier>CommonBuildParameter:DISABLE_ECDH</parameterIdentifier>
+                    <regexFilter>^$</regexFilter>
+                    <applyFor>
+                        <flagValue>no-ec</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- ECDH -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_ECDH</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ecdh</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*ECDH.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-ecdh</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- ECDSA -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_ECDSA</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ecdsa</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*ECDSA.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-ecdsa</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- DH -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_DH</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-dh</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*_DH.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-dh</flagValue>
+                    </applyFor>
+                </constraint>
+                <constraint>
+                    <parameterIdentifier>NAMED_GROUP</parameterIdentifier>
+                    <regexFilter>^FFDHE.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-dh</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- DSA -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_DSA</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-dsa</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*DSS.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-dsa</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- HTTP Support -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_HTTP_SUPPORT</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-http</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- IDEA Cipher -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_IDEA</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-idea</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*IDEA.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-idea</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- Poly1305 -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_POLY1305</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-poly1305</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*POLY1305.*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-poly1305</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- Datagram BIO -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_DATAGRAM_BIO</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>no-dgram</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <!-- ensure we also disable DTLS when datagram BIO is off-->
+                <constraint>
+                    <parameterIdentifier>CommonBuildParameter:DISABLE_DTLS</parameterIdentifier>
+                    <regexFilter>^no-dtls$</regexFilter>
+                    <applyFor>
+                        <flagValue>no-dgram</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!-- Dynamic Engine -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_DYNAMIC_ENGINE</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-dynamic-engine</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- TCP Fast Open (TFO) -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_TFO</derivationType>
+            <!-- Disabled as performance is significantly worse due to TCP wait states -->
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>no-tfo</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Kernel TLS -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_KTLS</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ktls</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Shared Library Pinning -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_PIN_SHARED</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-pinshared</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Weak SSL Ciphers -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_WEAK_SSL_CIPHERS</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>no-weak-ssl-ciphers</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+            <featureConstraints>
+                <constraint>
+                    <parameterIdentifier>CIPHER_SUITE</parameterIdentifier>
+                    <regexFilter>.*(RC2|RC4|MD5|DES).*</regexFilter>
+                    <applyFor>
+                        <flagValue>no-weak-ssl-ciphers</flagValue>
+                    </applyFor>
+                </constraint>
+            </featureConstraints>
+        </optionEntry>
+
+        <!--           Low prio           -->
+        <!--******************************-->
+        <!-- GOST Cipher Suites -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_GOST_CIPHER_SUITES</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>no-gost</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Compression -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_COMPRESSION</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>no-comp</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- SSL Trace -->
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_SSL_TRACE</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>no-ssl-trace</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+    </optionsToTest>
+</config>
