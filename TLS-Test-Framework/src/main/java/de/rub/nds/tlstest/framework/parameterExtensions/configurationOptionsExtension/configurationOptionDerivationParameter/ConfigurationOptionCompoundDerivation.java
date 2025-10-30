@@ -209,10 +209,17 @@ public class ConfigurationOptionCompoundDerivation
                                                         configOptionsConfig.translateOptionValue(
                                                                 coEntry);
                                             }
-                                            if (constraint.appliesForValue(valueString)) {
+                                            if (targetParam.getSelectedValue() != null
+                                                    && constraint.appliesForValue(valueString)) {
                                                 String regex = constraint.getRegexFilter();
+                                                // we use null to signal the absence of a value,
+                                                // filtering for this may also be necessary
                                                 String targetValue =
-                                                        targetParam.getSelectedValue().toString();
+                                                        targetParam.getSelectedValue() == null
+                                                                ? "null"
+                                                                : targetParam
+                                                                        .getSelectedValue()
+                                                                        .toString();
                                                 if (regex != null && targetValue.matches(regex)) {
                                                     return false;
                                                 }
