@@ -79,7 +79,7 @@ public class DockerBasedBuildManager {
     }
 
     /**
-     * Constructor. The DockerFactory passed decides which how specific builds are generated.
+     * Constructor
      *
      * @param configurationOptionsConfig The config parsed from the configuration options config
      *     file
