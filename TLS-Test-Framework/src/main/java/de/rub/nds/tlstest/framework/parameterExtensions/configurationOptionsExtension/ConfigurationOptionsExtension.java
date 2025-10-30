@@ -9,6 +9,8 @@
  */
 package de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension;
 
+import de.rub.nds.anvilcore.constants.TestEndpointType;
+import de.rub.nds.tlstest.framework.ClientFeatureExtractionResult;
 import de.rub.nds.tlstest.framework.FeatureExtractionResult;
 import de.rub.nds.tlstest.framework.TestContext;
 import de.rub.nds.tlstest.framework.parameterExtensions.configurationOptionsExtension.configurationOptionsConfig.ConfigurationOptionsConfig;
@@ -76,6 +78,11 @@ public class ConfigurationOptionsExtension {
                 config.getBuildManager().getMaximalFeatureExtractionResult();
         logContainerFeatures("richest configuration", maxFeatureExtractionResult);
         testContext.setFeatureExtractionResult(maxFeatureExtractionResult);
+        if (testContext.getConfig().getTestEndpointMode() == TestEndpointType.CLIENT) {
+            testContext.setReceivedClientHelloMessage(
+                    ((ClientFeatureExtractionResult) maxFeatureExtractionResult)
+                            .getReceivedClientHello());
+        }
     }
 
     public void shutdown() {

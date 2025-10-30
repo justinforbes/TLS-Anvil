@@ -73,9 +73,6 @@ public class DockerClientTestContainer extends DockerTestContainer {
         ClientFeatureExtractionResult clientFeatureExtractionResult =
                 ClientFeatureExtractionResult.fromClientScanReport(clientScanner.scan(), dockerTag);
         clientFeatureExtractionResult.setReceivedClientHello(clientHello);
-        if (testContext.getReceivedClientHelloMessage() == null) {
-            testContext.setReceivedClientHelloMessage(clientHello);
-        }
         return clientFeatureExtractionResult;
     }
 }
