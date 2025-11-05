@@ -7,7 +7,7 @@
  */
 package de.rub.nds.tlstest.framework;
 
-import de.rub.nds.anvilcore.execution.TestRunner;
+import de.rub.nds.anvilcore.context.AnvilContextRegistry;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -121,7 +121,7 @@ public class TestContextRegistry {
      */
     public static String getContextIdFromExtensionContext(ExtensionContext extensionContext) {
         return extensionContext
-                .getConfigurationParameter(TestRunner.CONTEXT_ID_PROPERTY)
+                .getConfigurationParameter(AnvilContextRegistry.CONTEXT_ID_PARAMETER)
                 .orElse(null);
     }
 }
