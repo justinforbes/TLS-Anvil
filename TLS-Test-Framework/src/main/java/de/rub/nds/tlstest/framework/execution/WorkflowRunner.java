@@ -51,10 +51,8 @@ import de.rub.nds.tlstest.framework.TestContextRegistry;
 import de.rub.nds.tlstest.framework.anvil.TlsParameterCombination;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -82,12 +80,9 @@ public class WorkflowRunner {
     private Boolean autoHelloRetryRequest = true;
     private Boolean autoAdaptForDtls = true;
 
-    private static Map<ExtensionContext, WorkflowRunner> workflowRunners = new HashMap<>();
-
     public WorkflowRunner(ExtensionContext extensionContext) {
         this.testContext = TestContextRegistry.byExtensionContext(extensionContext);
         this.extensionContext = extensionContext;
-        WorkflowRunner.workflowRunners.put(extensionContext, this);
     }
 
     public WorkflowRunner(ExtensionContext extensionContext, Config config) {
