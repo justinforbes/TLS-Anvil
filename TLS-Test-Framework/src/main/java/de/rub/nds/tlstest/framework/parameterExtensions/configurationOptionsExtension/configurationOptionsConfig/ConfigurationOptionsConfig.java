@@ -73,6 +73,9 @@ public class ConfigurationOptionsConfig {
 
     private String compoundOptionsFile; // default "compoundOptions.cache"
 
+    private String additionalClientCliParameter;
+    private String additionalServerCliParameter;
+
     // Docker Config (not required, but necessary for build managers that work with docker)
     private boolean dockerConfigPresent;
 
@@ -163,6 +166,22 @@ public class ConfigurationOptionsConfig {
         return compoundOptionsFile;
     }
 
+    public String getAdditionalClientCliParameter() {
+        return additionalClientCliParameter;
+    }
+
+    public void setAdditionalClientCliParameter(String additionalClientCliParameter) {
+        this.additionalClientCliParameter = additionalClientCliParameter;
+    }
+
+    public String getAdditionalServerCliParameter() {
+        return additionalServerCliParameter;
+    }
+
+    public void setAdditionalServerCliParameter(String additionalServerCliParameter) {
+        this.additionalServerCliParameter = additionalServerCliParameter;
+    }
+
     private void parseConfigFile(InputStream inputStream) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -184,6 +203,8 @@ public class ConfigurationOptionsConfig {
             parseAndConfigureMaxSimultaneousBuilds(rootElement);
             parseAndConfigureMaxRunningContainerShutdowns(rootElement);
             parseAndConfigureCompoundOptionsFile(rootElement);
+            parseAndConfigureAdditionalClientCliParameter(rootElement);
+            parseAndConfigureAdditionalServerCliParameter(rootElement);
             parseAndConfigureOptionsToTest(rootElement);
         } catch (IOException | SAXException | ParserConfigurationException e) {
             e.printStackTrace();
@@ -256,6 +277,22 @@ public class ConfigurationOptionsConfig {
             compoundOptionsFile = compoundOptionsElement.getTextContent();
         } else {
             compoundOptionsFile = DEFAULT_COMPOUND_OPTIONS_FILE;
+        }
+    }
+
+    private void parseAndConfigureAdditionalClientCliParameter(Element rootElement) {
+        Element additionalClientCliParameterElement =
+                XmlParseUtils.findElement(rootElement, "additionalClientCliParameter", false);
+        if (additionalClientCliParameterElement != null) {
+            additionalClientCliParameter = additionalClientCliParameterElement.getTextContent();
+        }
+    }
+
+    private void parseAndConfigureAdditionalServerCliParameter(Element rootElement) {
+        Element additionalServerCliParameterElement =
+                XmlParseUtils.findElement(rootElement, "additionalServerCliParameter", false);
+        if (additionalServerCliParameterElement != null) {
+            additionalServerCliParameter = additionalServerCliParameterElement.getTextContent();
         }
     }
 

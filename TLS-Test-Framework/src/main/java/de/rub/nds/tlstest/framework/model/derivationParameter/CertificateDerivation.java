@@ -76,6 +76,8 @@ public class CertificateDerivation extends TlsDerivationParameter<CertificateCon
         X509CertificateConfig config = configs.get(X509CertificateChainProvider.LEAF_CERT_INDEX);
         return !config.getPublicKeyType().name().contains("RSA")
                 || (config.getDefaultSubjectRsaModulus().bitLength() >= MIN_RSA_KEY_LEN
+                        && config.getDefaultIssuerRsaModulus().bitLength() >= MIN_RSA_KEY_LEN
+                        && config.getDefaultSubjectRsaModulus().bitLength() >= MIN_RSA_SIG_KEY_LEN
                         && config.getDefaultIssuerRsaModulus().bitLength() >= MIN_RSA_SIG_KEY_LEN);
     }
 

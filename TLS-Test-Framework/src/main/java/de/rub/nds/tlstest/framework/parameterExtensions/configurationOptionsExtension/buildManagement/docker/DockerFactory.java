@@ -160,6 +160,11 @@ public class DockerFactory {
                         .port(tlsServerPort)
                         .additionalBuildFlags(buildFlags);
 
+        if (configOptionsConfig.getAdditionalClientCliParameter() != null) {
+            clientInstanceBuilder =
+                    clientInstanceBuilder.additionalParameters(
+                            configOptionsConfig.getAdditionalClientCliParameter());
+        }
         String dockerContainerId =
                 createDockerContainer(clientInstanceBuilder, portBindings, containerName);
 
@@ -222,6 +227,11 @@ public class DockerFactory {
                         .hostname(dockerHost)
                         .port(CONTAINER_PORT_TLS_SERVER)
                         .additionalBuildFlags(buildFlags);
+        if (configOptionsConfig.getAdditionalServerCliParameter() != null) {
+            tlsServerInstanceBuilder =
+                    tlsServerInstanceBuilder.additionalParameters(
+                            configOptionsConfig.getAdditionalServerCliParameter());
+        }
 
         String containerName = String.format("%s_server_%s", containerNamePrefix, dockerTag);
         String dockerContainerId =

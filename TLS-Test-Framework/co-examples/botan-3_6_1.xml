@@ -1,0 +1,194 @@
+<config>
+    <tlsLibraryName>BOTAN</tlsLibraryName>
+    <tlsVersionName>3.6.1</tlsVersionName>
+    <dockerConfig>
+        <dockerHostBinding>127.0.0.42</dockerHostBinding>
+        <dockerHostName>127.0.0.42</dockerHostName>
+        <portRange>8100-20000</portRange>
+        <dockerClientDestinationHost>host.docker.internal</dockerClientDestinationHost>
+    </dockerConfig>
+    <maxRunningContainers>6</maxRunningContainers>
+    <maxSimultaneousBuilds>5</maxSimultaneousBuilds>
+    <maxRunningContainerShutdowns>6</maxRunningContainerShutdowns>
+    <configOptionsIpmStrength>2</configOptionsIpmStrength>
+
+    <!-- We need to disable cert validation as TLS-Anvil generates certifiactes on the fly. Manipulating certs is beyond the scope of TLS-Anvil. -->
+    <additionalClientCliParameter>--ignore-cert-error</additionalClientCliParameter>
+
+    <optionsToTest>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_EXPERIMENTAL_FEATURES</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--disable-experimental-features</true>
+                <false>--enable-experimental-features</false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_DEPRECATED_FEATURES</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--disable-deprecated-features</true>
+                <false maxValue="true">--enable-deprecated-features</false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_AES_NI</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--disable-aes-ni</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_SHA_NI</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--disable-sha-ni</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:ENABLE_DEBUG_INFO</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-debug-info</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:OPTIMIZE_FOR_SIZE</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--optimize-for-size</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:NO_OPTIMIZATIONS</derivationType>
+            <enabled>true</enabled>
+            <valueTranslation type="Flag">
+                <true>--no-optimizations</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <!-- Lower priority as external components may be required-->
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:SET_CPU_ARCHITECTURE</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--cpu=CPU</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:ENABLE_SANITIZERS</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--enable-sanitizers=SAN</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DISABLE_STACK_PROTECTOR</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--without-stack-protector</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_EXTERNAL_LIBDIR</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-external-libdir=DIR</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:DEFINE_BUILD_MACRO</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--define-build-macro</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:MINIMIZED_BUILD</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--minimized-build</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_BOOST</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-boost</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_LZMA</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-lzma</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_ZLIB</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-zlib</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_SQLITE3</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-sqlite3</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_TPM</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-tpm</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+        <optionEntry>
+            <derivationType>CommonBuildParameter:WITH_TPM2</derivationType>
+            <enabled>false</enabled>
+            <valueTranslation type="Flag">
+                <true>--with-tpm2</true>
+                <false maxValue="true"></false>
+            </valueTranslation>
+        </optionEntry>
+
+    </optionsToTest>
+</config>

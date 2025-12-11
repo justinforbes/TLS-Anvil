@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Properties>
-        <Property name="filename">${env:LogFilename:-default}_$${date:MM-dd-yyyy_HH-mm-ss}</Property>
+        <Property name="filename">${env:LogFilename:-default}_${date:MM-dd-yyyy_HH-mm-ss}</Property>
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-			<PatternLayout pattern="%highlight{%d{HH:mm:ss}: %msg%n%throwable}"/>
+            <PatternLayout pattern="%highlight{%d{HH:mm:ss}: %msg%n%throwable}"/>
         </Console>
         <File name="FileTestsuite" fileName="logs/${filename}_testsuite.log">
             <PatternLayout pattern="%d{MM-dd-yyyy_HH:mm:ss} [%t] %-5level: %c{1}.%M(%F:%L) - %msg%n%throwable"/>
@@ -14,6 +14,9 @@
             <PatternLayout pattern="%d{MM-dd-yyyy_HH:mm:ss} [%t] %-5level: %c{1}.%M(%F:%L) - %msg%n%throwable"/>
         </File>
         <File name="FileTlsAttacker" fileName="logs/${filename}_tlsattacker.log">
+            <PatternLayout pattern="%d{MM-dd-yyyy_HH:mm:ss} [%t] %-5level: %c{1}.%M(%F:%L) - %msg%n%throwable"/>
+        </File>
+        <File name="FileDockerBuild" fileName="logs/${filename}_dockerbuild.log">
             <PatternLayout pattern="%d{MM-dd-yyyy_HH:mm:ss} [%t] %-5level: %c{1}.%M(%F:%L) - %msg%n%throwable"/>
         </File>
     </Appenders>
@@ -60,6 +63,9 @@
             <AppenderRef ref="Console" level="info"/>
             <AppenderRef ref="FileTestsuite_warn" level="warn"/>
             <AppenderRef ref="FileTestsuite"/>
+        </Logger>
+        <Logger name="de.rub.nds.tls.subject.docker.build" level="info" additivity="false">
+            <AppenderRef ref="FileDockerBuild"/>
         </Logger>
 
         <Logger name="org.junit.jupiter" level="warn">
