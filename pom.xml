@@ -42,7 +42,7 @@
         <toolkit.tls.scanner.version>7.4.0</toolkit.tls.scanner.version>
         <toolkit.common.scannercore.version>6.2.1</toolkit.common.scannercore.version>
         <toolkit.common.anvilcore.version>2.3.4</toolkit.common.anvilcore.version>
-        <toolkit.common.protocolattacker.version>2.2.0</toolkit.common.protocolattacker.version>
+        <toolkit.common.protocolattacker.version>2.2.2</toolkit.common.protocolattacker.version>
         <toolkit.common.x509attacker.version>4.3.10</toolkit.common.x509attacker.version>
         <toolkit.tls.dockerlib.version>3.2.2</toolkit.tls.dockerlib.version>
     </properties>
