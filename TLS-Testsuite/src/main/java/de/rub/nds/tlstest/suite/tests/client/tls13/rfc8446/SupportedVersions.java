@@ -25,6 +25,7 @@ import de.rub.nds.tlsattacker.core.protocol.message.extension.SupportedVersionsE
 import de.rub.nds.tlsattacker.core.state.State;
 import de.rub.nds.tlsattacker.core.workflow.WorkflowTrace;
 import de.rub.nds.tlsattacker.core.workflow.WorkflowTraceConfigurationUtil;
+import de.rub.nds.tlsattacker.core.workflow.WorkflowTraceResultUtil;
 import de.rub.nds.tlsattacker.core.workflow.action.ReceiveAction;
 import de.rub.nds.tlsattacker.core.workflow.action.SendAction;
 import de.rub.nds.tlsattacker.core.workflow.factory.WorkflowTraceType;
@@ -79,7 +80,17 @@ public class SupportedVersions extends Tls13Test {
                 .setProtocolVersion(Modifiable.explicit(chosenInvalidVersion));
 
         State state = runner.execute(workflowTrace, c);
-        Validator.executedAsPlanned(state, testCase);
+
+        if (!WorkflowTraceResultUtil.didReceiveMessage(
+                workflowTrace, HandshakeMessageType.FINISHED)) {
+            // peers may consider the legacy version field exclusively for sanity checks and thus
+            // reject our invalid version
+            Validator.receivedFatalAlert(state, testCase);
+            Validator.testAlertDescription(state, testCase, AlertDescription.PROTOCOL_VERSION);
+        } else {
+            // if the peer ignored the invalid legacy version, ensure TLS 1.3 flow was followed
+            Validator.executedAsPlanned(state, testCase);
+        }
     }
 
     @AnvilTest(id = "8446-w9k9gMLaeU")

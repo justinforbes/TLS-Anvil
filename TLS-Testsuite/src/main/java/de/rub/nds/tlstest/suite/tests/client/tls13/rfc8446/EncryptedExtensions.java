@@ -14,6 +14,7 @@ import de.rub.nds.anvilcore.teststate.AnvilTestCase;
 import de.rub.nds.modifiablevariable.util.Modifiable;
 import de.rub.nds.tlsattacker.core.config.Config;
 import de.rub.nds.tlsattacker.core.constants.AlertDescription;
+import de.rub.nds.tlsattacker.core.constants.ExtensionType;
 import de.rub.nds.tlsattacker.core.constants.HandshakeMessageType;
 import de.rub.nds.tlsattacker.core.constants.MaxFragmentLength;
 import de.rub.nds.tlsattacker.core.protocol.message.AlertMessage;
@@ -89,7 +90,20 @@ public class EncryptedExtensions extends Tls13Test {
 
         Validator.receivedFatalAlert(state, testCase);
         AlertMessage alert = state.getWorkflowTrace().getFirstReceivedMessage(AlertMessage.class);
-        Validator.testAlertDescription(state, testCase, AlertDescription.ILLEGAL_PARAMETER, alert);
+        AlertDescription[] expectedAlerts;
+        if (!context.getReceivedClientHelloMessage().containsExtension(ExtensionType.PADDING)) {
+            // Section 4.2 of RFC 8446 mandates that an 'unsupported extension' alert is sent if the
+            // server negotiated an extension that was not offered by the client
+            // In this case, it is correct for the peer tp send either alert code as the
+            // requirements clash
+            expectedAlerts =
+                    new AlertDescription[] {
+                        AlertDescription.UNSUPPORTED_EXTENSION, AlertDescription.ILLEGAL_PARAMETER
+                    };
+        } else {
+            expectedAlerts = new AlertDescription[] {AlertDescription.ILLEGAL_PARAMETER};
+        }
+        Validator.testAlertDescription(state, testCase, expectedAlerts, alert);
     }
 
     @AnvilTest(id = "8446-34CYsV98Fs")
